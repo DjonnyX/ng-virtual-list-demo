@@ -117,7 +117,7 @@ export class AppComponent {
         items.push(msg);
         this.groupDynamicItemsStickyMap[msg.id] = 0;
 
-        for (let i = 0, l = 50; i < l; i++) {
+        for (let i = 0, l = 1; i < l; i++) {
           const msgStart = generateMessage(this.groupDynamicItems.length + 10000 + i);
           this.groupDynamicItemsStickyMap[msgStart.id] = 0;
           items.unshift(msgStart);

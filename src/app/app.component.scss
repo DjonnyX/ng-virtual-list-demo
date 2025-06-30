@@ -124,6 +124,7 @@
 
 .list {
     opacity: var(--viewport-alpha);
+    transition: opacity 0s ease-in 100ms;
     background: linear-gradient(180deg, rgb(80, 42, 155) 0%, rgb(53, 147, 184) 100%);
     border-radius: 4px;
 
