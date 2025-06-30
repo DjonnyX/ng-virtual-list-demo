@@ -1,7 +1,8 @@
 <div class="wrapper">
   <div class="vl-section block cap">
     <h1 class="center">ng-virtual-list</h1>
-    <p class="l">Maximum performance for extremely large lists</p>
+    <!-- <p class="l">Maximum performance for extremely large lists</p> -->
+    <p class="l">Benchmark: 200 000 elemenst (Virtual list)</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
     <div class="version"><span>v 19.1.22</span></div>
@@ -12,6 +13,19 @@
       [itemSize]="40" [itemsOffset]="20" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="true" [snap]="true"
       (onScroll)="onScrollHandler($event)" (onScroll)="onScrollEndHandler($event)" [likeAChat]="true"></ng-virtual-list>
   </div>
+  <!-- <div class="list vertical">
+  <div class="scroller">
+    <ul class="ngvl__list">
+      @for (item of groupDynamicItems; track item.id) {
+        @if (item) {
+          <li #listItem part="item" class="item ngvl-item__container" [ngClass]="{'snapped': groupDynamicItemsStickyMap[item.id] > 0}">
+                <ng-container [ngTemplateOutlet]="groupItemRenderer"
+                    [ngTemplateOutletContext]="{data: item || {}, config: item}" />
+          }
+        }
+    </ul>
+  </div>
+  </div> -->
 
   <ng-template #groupItemRenderer let-data="data" let-config="config">
     @if (data) {
