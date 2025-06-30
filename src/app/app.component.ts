@@ -1,53 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, viewChild } from '@angular/core';
+import { Component, ElementRef, viewChild } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-// import { NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap } from '../../../virtual-list/projects/ng-virtual-list/src/public-api';
-import { NgVirtualListComponent, IVirtualListCollection, IVirtualListStickyMap } from 'ng-virtual-list';
-import { combineLatest, debounceTime, filter, of, switchMap, tap } from 'rxjs';
+// import { NgVirtualListComponent, IScrollEvent, IRect } from '../../../virtual-list/projects/ng-virtual-list/src/public-api';
+import { NgVirtualListComponent, IScrollEvent, IRect } from 'ng-virtual-list';
+import { BehaviorSubject, combineLatest, debounceTime, delay, filter, from, interval, map, mergeMap, of, switchMap, tap } from 'rxjs';
 import { LOGO } from './const';
+import { GROUP_DYNAMIC_ITEMS, GROUP_DYNAMIC_ITEMS_STICKY_MAP } from './const/collection';
+import { generateMessage, generateWriteIndicator } from './utils/collection';
 
-const MAX_ITEMS = 100000;
-
-const CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
-
-const generateLetter = () => {
-  return CHARS[Math.round(Math.random() * CHARS.length)];
-}
-
-const generateWord = () => {
-  const length = 5 + Math.floor(Math.random() * 50), result = [];
-  while (result.length < length) {
-    result.push(generateLetter());
-  }
-  return `${result.join('')}`;
-};
-
-const generateText = () => {
-  const length = 2 + Math.floor(Math.random() * 10), result = [];
-  while (result.length < length) {
-    result.push(generateWord());
-  }
-  let firstWord = '';
-  for (let i = 0, l = result[0].length; i < l; i++) {
-    const letter = result[0].charAt(i);
-    firstWord += i === 0 ? letter.toUpperCase() : letter;
-  }
-  result[0] = firstWord;
-  return `${result.join(' ')}.`;
-};
-
-const GROUP_DYNAMIC_ITEMS: IVirtualListCollection = [],
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
-
-let groupDynamicIndex = 0;
-for (let i = 0, l = MAX_ITEMS; i < l; i++) {
-  const id = i + 1, type = i === 0 || Math.random() > .895 ? 'group-header' : 'item', incomType = Math.random() > .5 ? 'in' : 'out';
-  if (type === 'group-header') {
-    groupDynamicIndex++;
-  }
-  GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupDynamicIndex}` : `${id}. ${generateText()}`, incomType });
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
-}
+const SNAP_HEIGHT = 100;
 
 @Component({
   selector: 'app-root',
@@ -59,23 +20,134 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
 export class AppComponent {
   readonly logo = LOGO;
 
-  protected _listContainerRef = viewChild('dynamicList', { read: NgVirtualListComponent });
+  protected _listContainerRef = viewChild('dynamicList', { read: ElementRef });
+
+  private _$isEndOfListPosition = new BehaviorSubject<boolean>(true);
+  readonly $isEndOfListPosition = this._$isEndOfListPosition;
+
+  private _$version = new BehaviorSubject<number>(0);
+  readonly $version = this._$version.asObservable();
 
   groupDynamicItems = GROUP_DYNAMIC_ITEMS;
   groupDynamicItemsStickyMap = GROUP_DYNAMIC_ITEMS_STICKY_MAP;
 
   constructor() {
-    // const list = this._listContainerRef;
-    // toObservable(list).pipe(
+    const list = this._listContainerRef;
+
+    // const $virtualList = toObservable(list).pipe(
     //   filter(list => !!list),
-    //   switchMap((list => {
-    //     return combineLatest([of(list), list.$initialized]);
-    //   })),
-    //   filter(([, init]) => init),
-    //   debounceTime(1),
-    //   tap(([list]) => {
-    //     list.scrollToEnd('instant');
+    //   switchMap(list => combineLatest([of(list), list?.$initialized])),
+    //   filter(([, init]) => !!init),
+    //   map(([list]) => list),
+    // );
+
+    // combineLatest([this.$version, $virtualList]).pipe(
+    //   map(([version, list]) => ({ version, list })),
+    //   mergeMap(({ version, list }) => {
+    //     return combineLatest([of(version), of(list)]);
+    //   }),
+    //   map(([version, list]) => ({ version, list })),
+    //   filter(({ list }) => !!list),
+    //   debounceTime(50),
+    //   tap(({ version, list }) => {
+    //     if (version === 0) {
+    //       list!.scrollToEnd('instant');
+    //     }
+
+    //     if (this._$isEndOfListPosition.getValue()) {
+    //       list!.scrollToEnd('instant');
+    //     }
     //   })
     // ).subscribe();
+
+    // $virtualList.pipe(
+    //   delay(100),
+    //   switchMap(() => this.write()),
+    // ).subscribe();
+
+    // from(interval(2000)).pipe(
+    //   switchMap(() => this.write()),
+    // ).subscribe();
+
+    // combineLatest([this.$scrollParams, $virtualList, this.$version]).pipe(
+    //   delay(10),
+    //   switchMap(([{ viewportEndY, scrollWeight }, list]) => {
+    //     let bounds: IRect | undefined;
+    //     if (list) {
+    //       bounds = list.getItemBounds(this.groupDynamicItems[this.groupDynamicItems.length - 1].id);
+    //     }
+
+    //     const height = (bounds?.height ?? 0);
+
+    //     return of((viewportEndY + height + SNAP_HEIGHT) >= scrollWeight);
+    //   }),
+    //   tap(v => {
+    //     this._$isEndOfListPosition.next(v);
+    //   }),
+    // ).subscribe();
+
+    // const appHeightHandler = () => document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+    // window.addEventListener('resize', appHeightHandler);
+
+    // $virtualList.pipe(
+    //   tap(() => {
+    //     appHeightHandler();
+    //   }),
+    //   delay(100),
+    //   tap(() => {
+    //     document.documentElement.style.setProperty('--viewport-alpha', '1');
+    //   }),
+    // ).subscribe();
+  }
+
+  private write() {
+    const msg = generateMessage(this.groupDynamicItems.length);
+    return of(msg).pipe(
+      tap(() => {
+        const writeIndicator = generateWriteIndicator(this.groupDynamicItems.length);
+        this.groupDynamicItems = [...this.groupDynamicItems, writeIndicator];
+        this.groupDynamicItemsStickyMap[writeIndicator.id] = 0;
+
+        this.increaseVersion();
+      }),
+      delay(500),
+      tap(() => {
+        const items = [...this.groupDynamicItems];
+        items.pop();
+        items.push(msg);
+        this.groupDynamicItemsStickyMap[msg.id] = 0;
+
+        for (let i = 0, l = 50; i < l; i++) {
+          const msgStart = generateMessage(this.groupDynamicItems.length + 10000 + i);
+          this.groupDynamicItemsStickyMap[msgStart.id] = 0;
+          items.unshift(msgStart);
+        }
+
+        this.groupDynamicItems = items;
+
+        this.increaseVersion();
+      })
+    );
+  }
+
+  private increaseVersion() {
+    this._$version.next(this._$version.getValue() + 1);
+  }
+
+  private _$scrollParams = new BehaviorSubject<{ viewportEndY: number, scrollWeight: number }>({ viewportEndY: 0, scrollWeight: 0 });
+  readonly $scrollParams = this._$scrollParams.asObservable();
+
+  onScrollHandler(e: IScrollEvent & { [x: string]: any; }) {
+    // this._$scrollParams.next({
+    //   viewportEndY: e.scrollSize + e.size,
+    //   scrollWeight: e.scrollWeight,
+    // });
+  }
+
+  onScrollEndHandler(e: IScrollEvent & { [x: string]: any; }) {
+    // this._$scrollParams.next({
+    //   viewportEndY: e.scrollSize + e.size,
+    //   scrollWeight: e.scrollWeight,
+    // });
   }
 }
