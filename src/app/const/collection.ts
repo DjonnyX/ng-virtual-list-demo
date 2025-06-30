@@ -1,7 +1,7 @@
 import { IVirtualListCollection, IVirtualListStickyMap } from "ng-virtual-list";
 import { generateText } from "../utils";
 
-const MAX_ITEMS = 200000;
+const MAX_ITEMS = 1000;
 
 const GROUP_DYNAMIC_ITEMS: IVirtualListCollection = [],
   GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};

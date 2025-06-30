@@ -122,30 +122,12 @@
     overflow: hidden;
 }
 
-.scroller {
-    overflow: auto;
-    width: 100%;
-    height: 100%;
-}
-
-.ngvl__list {
-    max-width: 640px;
-    margin: 0 !important;
-    padding: 0 !important;
-    padding-inline-start: 0 !important;
-}
-
 .list {
-    height: 750px !important;
-    
-    .item {
-        display: block;
-    }
-    // opacity: var(--viewport-alpha);
+    opacity: var(--viewport-alpha);
     background: linear-gradient(180deg, rgb(80, 42, 155) 0%, rgb(53, 147, 184) 100%);
     border-radius: 4px;
 
-    &::part(scroller), & > .scroller {
+    &::part(scroller) {
         scroll-behavior: auto;
     }
 
