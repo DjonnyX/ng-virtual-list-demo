@@ -4,10 +4,13 @@ export const generateLetter = () => {
   return CHARS[Math.round(Math.random() * CHARS.length)];
 }
 
-export const generateWord = () => {
-  const length = 5 + Math.floor(Math.random() * 50), result = [];
+export const generateWord = (max = 50, firstLatterAsCap = false) => {
+  const length = 5 + Math.floor(Math.random() * max), result = [];
   while (result.length < length) {
     result.push(generateLetter());
+  }
+  if (firstLatterAsCap && result.length) {
+    result[0] = result[0]?.toUpperCase();
   }
   return `${result.join('')}`;
 };

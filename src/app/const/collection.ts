@@ -1,7 +1,14 @@
 import { IVirtualListCollection, IVirtualListStickyMap } from "ng-virtual-list";
-import { generateText } from "../utils";
+import { generateText, generateWord } from "../utils";
 
-const MAX_ITEMS = 10000;
+const ROOMS_MAX_ITEMS = 10000, MAX_ITEMS = 10000;
+
+const ITEMS: IVirtualListCollection = [];
+
+for (let i = 0, l = ROOMS_MAX_ITEMS; i < l; i++) {
+  const id = i + 1;
+  ITEMS.push({ id, name: `${generateWord(30, true)}` });
+}
 
 const GROUP_DYNAMIC_ITEMS: IVirtualListCollection = [],
   GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
@@ -17,6 +24,7 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
 }
 
 export {
-    GROUP_DYNAMIC_ITEMS,
-    GROUP_DYNAMIC_ITEMS_STICKY_MAP,
+  GROUP_DYNAMIC_ITEMS,
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP,
+  ITEMS,
 };

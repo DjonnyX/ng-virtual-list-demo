@@ -10,3 +10,16 @@ body {
     width: calc(100% - 80px);
     height: calc(var(--app-height) - 80px);
 }
+
+textarea:focus,
+input:focus {
+    outline: none;
+}
+
+input[type=checkbox],
+input[type=radio] {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 0;
+}

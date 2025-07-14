@@ -1,0 +1,13 @@
+@let dockMode = dock();
+<div class="container" [ngClass]="{'dock-left': dockMode === 'left', 'dock-right': dockMode === 'right' }"
+[ngStyle]="styles()">
+    <div class="dock left">
+        <ng-content select="dock-left" />
+    </div>
+    <div class="content">
+        <ng-content></ng-content>
+    </div>
+    <div class="dock right">
+        <ng-content select="dock-right" />
+    </div>
+</div>

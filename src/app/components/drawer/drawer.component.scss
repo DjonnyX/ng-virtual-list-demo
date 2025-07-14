@@ -1,0 +1,31 @@
+:host {
+    overflow: hidden;
+}
+
+.wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.container {
+    position: relative;
+    display: grid;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.1s ease-in-out;
+
+    .dock.left,
+    .dock.right {
+        z-index: 10;
+        box-shadow: 4px 1px 20px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .dock,
+    .content {
+        width: calc(100%);
+        height: calc(100%);
+        overflow: hidden;
+    }
+}
