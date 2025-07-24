@@ -3,9 +3,10 @@
   <div class="vl-section block cap">
     <h1 class="center">ng-virtual-list</h1>
     <p class="l">Maximum performance for extremely large lists</p>
+    <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 19.1.37</span></div>
+    <div class="version"><span>v 19.2.12</span></div>
   </div>
   <div class="container">
 
@@ -23,16 +24,18 @@
         <dock-left>
           <div class="list-rooms__container">
             <ng-virtual-list class="list rooms" [items]="items" [itemRenderer]="itemRenderer" [trackBy]="'id'"
-              [itemSize]="40" [dynamicSize]="true" [itemsOffset]="50"></ng-virtual-list>
+              [itemSize]="40" [dynamicSize]="true" [itemsOffset]="100"></ng-virtual-list>
           </div>
         </dock-left>
-        <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-          [trackBy]="'id'" [itemSize]="40" [itemsOffset]="10" [stickyMap]="groupDynamicItemsStickyMap"
-          [dynamicSize]="true" [snap]="true" (onScroll)="onScrollHandler($event)"
-          (onScroll)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"></ng-virtual-list>
-        <!-- <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [trackBy]="'id'"
-        [itemSize]="40" [itemsOffset]="10" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="false" [snap]="true"
-        (onScroll)="onScrollHandler($event)" (onScroll)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"></ng-virtual-list> -->
+        <div class="list-wrapper">
+          <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
+            [trackBy]="'id'" [itemSize]="40" [itemsOffset]="100" [stickyMap]="groupDynamicItemsStickyMap"
+            [dynamicSize]="true" [snap]="true" (onScroll)="onScrollHandler($event)" snappingMethod="advanced"
+            (onScrollEnd)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"></ng-virtual-list>
+          <!-- <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [trackBy]="'id'"
+          [itemSize]="40" [itemsOffset]="10" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="false" [snap]="true"
+          (onScroll)="onScrollHandler($event)" (onScroll)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"></ng-virtual-list> -->
+        </div>
       </app-drawer>
     </div>
   </div>

@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, inject, input, Signal, signal, ViewEncapsulation } from '@angular/core';
+import { Component, computed, ElementRef, inject, input, Signal, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export enum DockMode {
@@ -18,6 +18,8 @@ export type TDockMode = DockMode.LEFT | DockMode.RIGHT | DockMode.NONE | 'left' 
 })
 export class DrawerComponent {
   private _elementRef = inject(ElementRef<HTMLDivElement>);
+
+  container = viewChild<ElementRef<HTMLDivElement>>('container');
 
   dock = input<TDockMode>(DockMode.NONE);
 
@@ -54,6 +56,11 @@ export class DrawerComponent {
       this._resizeObserver.observe(containerEl.nativeElement);
 
       this._onResizeHandler();
+
+      const container = this.container();
+      if (container) {
+        container.nativeElement.style.transition = 'transform 0.1s ease-in-out';
+      }
     }
   }
 }

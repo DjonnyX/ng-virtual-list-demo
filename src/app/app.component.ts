@@ -3,7 +3,7 @@ import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, Signal, signal, viewChild 
 import { toObservable } from '@angular/core/rxjs-interop';
 // import { NgVirtualListComponent, IScrollEvent, ISize, IVirtualListItem } from '../../../virtual-list/projects/ng-virtual-list/src/public-api';
 import { NgVirtualListComponent, IVirtualListItem, IScrollEvent, ISize } from 'ng-virtual-list';
-import { BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, from, interval, map, of, switchMap, take, tap, throttleTime } from 'rxjs';
+import { BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, from, interval, map, mergeMap, of, switchMap, take, tap, throttleTime } from 'rxjs';
 import { LOGO } from './const';
 import { GROUP_DYNAMIC_ITEMS, GROUP_DYNAMIC_ITEMS_STICKY_MAP, ITEMS } from './const/collection';
 import { generateMessage, generateWriteIndicator } from './utils/collection';
@@ -110,12 +110,12 @@ export class AppComponent {
 
     $virtualList.pipe(
       delay(100),
-      switchMap(() => this.write()),
+      mergeMap(() => this.write()),
     ).subscribe();
 
 
     from(interval(2000)).pipe(
-      switchMap(() => this.write()),
+      mergeMap(() => this.write()),
     ).subscribe();
 
     combineLatest([toObservable(this._scrollParams), $virtualList, this.$version]).pipe(
