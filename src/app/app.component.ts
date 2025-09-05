@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, Signal, signal, viewChild } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 // import { NgVirtualListComponent, IScrollEvent, ISize, IVirtualListItem } from '../../../virtual-list/projects/ng-virtual-list/src/public-api';
-import { NgVirtualListComponent, IVirtualListItem, IScrollEvent, ISize } from 'ng-virtual-list';
+import { NgVirtualListComponent, IVirtualListItem, IRenderVirtualListItem, IScrollEvent, ISize } from 'ng-virtual-list';
 import { BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, from, interval, map, mergeMap, of, switchMap, take, tap, throttleTime } from 'rxjs';
 import { LOGO } from './const';
 import { GROUP_DYNAMIC_ITEMS, GROUP_DYNAMIC_ITEMS_STICKY_MAP, ITEMS } from './const/collection';
@@ -220,25 +220,29 @@ export class AppComponent {
     });
   }
 
-  onClickHandler(data: IVirtualListItem) {
-    // const element = this.groupDynamicItems.find(({ id }) => id === data.id);
-    // console.log('e', element)
-    // if (element) {
-    //   element['name'] = element['name'] + element['name'];
-    // }
+  onClickHandler(item: IRenderVirtualListItem | undefined) {
+    // if (item) {
+    //   const element = this.groupDynamicItems.find(({ id }) => id === item.id);
+    //   console.log('e', element)
+    //   if (element) {
+    //     element['name'] = element['name'] + element['name'];
+    //   }
 
-    // this.groupDynamicItems = [... this.groupDynamicItems];
+    //   this.groupDynamicItems = [... this.groupDynamicItems];
+    // }
   }
 
-  onRoomClickHandler(data: IVirtualListItem) {
+  onRoomClickHandler(item: IRenderVirtualListItem | undefined) {
     this.menuOpened.set(false);
-    this.title.set(data['name']);
-    this.resetList();
-    this._listContainerRef()?.scrollToEnd('instant');
-
-    setTimeout(() => {
+    if (item) {
+      this.title.set(item.data['name']);
+      this.resetList();
       this._listContainerRef()?.scrollToEnd('instant');
-    }, 150);
+
+      setTimeout(() => {
+        this._listContainerRef()?.scrollToEnd('instant');
+      }, 150);
+    }
   }
 
   onOpenMenuHandler() {

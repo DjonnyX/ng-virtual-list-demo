@@ -6,7 +6,7 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 19.2.12</span></div>
+    <div class="version"><span>v 19.6.0</span></div>
   </div>
   <div class="container">
 
@@ -24,16 +24,16 @@
         <dock-left>
           <div class="list-rooms__container">
             <ng-virtual-list class="list rooms" [items]="items" [itemRenderer]="itemRenderer" [trackBy]="'id'"
-              [itemSize]="40" [dynamicSize]="true" [itemsOffset]="100"></ng-virtual-list>
+              [itemSize]="40" [dynamicSize]="true" [bufferSize]="100" (onItemClick)="onRoomClickHandler($event)"></ng-virtual-list>
           </div>
         </dock-left>
         <div class="list-wrapper">
           <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-            [trackBy]="'id'" [itemSize]="40" [itemsOffset]="100" [stickyMap]="groupDynamicItemsStickyMap"
+            [trackBy]="'id'" [itemSize]="40" [bufferSize]="30" [bufferSize]="200" [stickyMap]="groupDynamicItemsStickyMap"
             [dynamicSize]="true" [snap]="true" (onScroll)="onScrollHandler($event)" snappingMethod="advanced"
-            (onScrollEnd)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"></ng-virtual-list>
+            (onScrollEnd)="onScrollEndHandler($event)" [enabledBufferOptimization]="false" (onItemClick)="onClickHandler($event)"></ng-virtual-list>
           <!-- <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [trackBy]="'id'"
-          [itemSize]="40" [itemsOffset]="10" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="false" [snap]="true"
+          [itemSize]="40" [bufferSize]="10" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="false" [snap]="true"
           (onScroll)="onScrollHandler($event)" (onScroll)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"></ng-virtual-list> -->
         </div>
       </app-drawer>
@@ -76,8 +76,7 @@
     @let isIn = data.incomType === 'in';
     @let isOut = data.incomType === 'out';
     @let class = {'in': isIn, 'out': isOut, 'edit': isEdit};
-    <div class="list__container" [ngClass]="class" [longPress]="1000" (longPressFinish)="onEditModeStartHandler()"
-      (click)="onClickHandler(data)">
+    <div class="list__container" [ngClass]="class" [longPress]="1000" (longPressFinish)="onEditModeStartHandler()">
       <div class="message__container">
         <!-- @if (isEdit) {
         <div class="message_delete-button">
@@ -108,7 +107,7 @@
     </div>
     }
     @default {
-    <div class="list__item-container" (click)="onRoomClickHandler(data)">
+    <div class="list__item-container">
       <div class="message">
         <span>
           <svg xmlns="http://www.w3.org/2000/svg" fill="#b8b8b8" width="48px" height="48px" viewBox="0 0 512 512">
