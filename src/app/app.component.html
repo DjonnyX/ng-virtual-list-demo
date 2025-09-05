@@ -1,36 +1,42 @@
+@let isEdit = isEditMode();
 <div class="wrapper">
   <div class="vl-section block cap">
     <h1 class="center">ng-virtual-list</h1>
     <p class="l">Maximum performance for extremely large lists</p>
+    <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 19.1.30</span></div>
+    <div class="version"><span>v 19.6.0</span></div>
   </div>
   <div class="container">
 
     <div class="toolbar">
-      <div></div>
-      <div class="title"></div>
-      <div class="search-container">
-        <input type="search" class="search" placeholder="Search" [(ngModel)]="searchText" (input)="onSearchHandler()">
-        <svg role="presentation" class="i-search" viewBox="0 0 32 32" width="14" height="14" fill="none"
-          stroke="#91a9be" stroke-linecap="round" stroke-linejoin="round" stroke-width="3">
-          <circle cx="14" cy="14" r="12" />
-          <path d="M23 23 L30 30" />
-        </svg>
+      <div>
+        <app-menu-button (click)="onOpenMenuHandler()" [opened]="menuOpened()" />
       </div>
+      <div class="title">{{title()}}</div>
+      <app-search (search)="onSearchHandler($event)" />
     </div>
 
     <div class="list-container">
-      @if (show()) {
-      <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-        [trackBy]="'id'" [itemSize]="40" [itemsOffset]="50" [stickyMap]="groupDynamicItemsStickyMap"
-        [dynamicSize]="true" [snap]="true" (onScroll)="onScrollHandler($event)" (onScroll)="onScrollEndHandler($event)"
-        [enabledBufferOptimization]="false"></ng-virtual-list>
-      <!-- <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [trackBy]="'id'"
-        [itemSize]="40" [itemsOffset]="10" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="false" [snap]="true"
-        (onScroll)="onScrollHandler($event)" (onScroll)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"></ng-virtual-list> -->
-      }
+      @let doc = dockMode();
+      <app-drawer [dock]="doc" [dockLeftSize]="240">
+        <dock-left>
+          <div class="list-rooms__container">
+            <ng-virtual-list class="list rooms" [items]="items" [itemRenderer]="itemRenderer" [trackBy]="'id'"
+              [itemSize]="40" [dynamicSize]="true" [bufferSize]="100" (onItemClick)="onRoomClickHandler($event)"></ng-virtual-list>
+          </div>
+        </dock-left>
+        <div class="list-wrapper">
+          <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
+            [trackBy]="'id'" [itemSize]="40" [bufferSize]="30" [bufferSize]="200" [stickyMap]="groupDynamicItemsStickyMap"
+            [dynamicSize]="true" [snap]="true" (onScroll)="onScrollHandler($event)" snappingMethod="advanced"
+            (onScrollEnd)="onScrollEndHandler($event)" [enabledBufferOptimization]="false" (onItemClick)="onClickHandler($event)"></ng-virtual-list>
+          <!-- <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [trackBy]="'id'"
+          [itemSize]="40" [bufferSize]="10" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="false" [snap]="true"
+          (onScroll)="onScrollHandler($event)" (onScroll)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"></ng-virtual-list> -->
+        </div>
+      </app-drawer>
     </div>
   </div>
 
@@ -69,9 +75,47 @@
     @default {
     @let isIn = data.incomType === 'in';
     @let isOut = data.incomType === 'out';
-    @let class = {'in': isIn, 'out': isOut};
-    <div class="list__container" [ngClass]="class" [ngStyle]="{}" (click)="onClickHandler(data)">
-      <div class="message" [ngClass]="class">
+    @let class = {'in': isIn, 'out': isOut, 'edit': isEdit};
+    <div class="list__container" [ngClass]="class" [longPress]="1000" (longPressFinish)="onEditModeStartHandler()">
+      <div class="message__container">
+        <!-- @if (isEdit) {
+        <div class="message_delete-button">
+          <div class="el-radio">
+            <input type="radio" name="radio1" id="1_6" value="option" checked="">
+            <label class="el-radio-style" for="1_6"></label>
+          </div>
+        </div>
+        } -->
+        <div class="message" [ngClass]="class">
+          <span searchHighlight substringClass="search-substring" [text]="data.name" [searchedWords]="searchedWords()">{{data.name}}</span>
+        </div>
+      </div>
+    </div>
+    }
+    }
+    }
+  </ng-template>
+
+  <ng-template #itemRenderer let-data="data" let-config="config">
+    @if (data) {
+    @switch (data.type) {
+    @case ("group-header") {
+    <div class="list__item-container">
+      <div class="content">
+        <span>{{data.name}}</span>
+      </div>
+    </div>
+    }
+    @default {
+    <div class="list__item-container">
+      <div class="message">
+        <span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="#b8b8b8" width="48px" height="48px" viewBox="0 0 512 512">
+            <title>ionicons-v5-j</title>
+            <path
+              d="M256,48C141.31,48,48,141.31,48,256s93.31,208,208,208,208-93.31,208-208S370.69,48,256,48ZM205.78,164.82C218.45,151.39,236.28,144,256,144s37.39,7.44,50.11,20.94C319,178.62,325.27,197,323.79,216.76,320.83,256,290.43,288,256,288s-64.89-32-67.79-71.25C186.74,196.83,193,178.39,205.78,164.82ZM256,432a175.49,175.49,0,0,1-126-53.22,122.91,122.91,0,0,1,35.14-33.44C190.63,329,222.89,320,256,320s65.37,9,90.83,25.34A122.87,122.87,0,0,1,382,378.78,175.45,175.45,0,0,1,256,432Z" />
+          </svg>
+        </span>
         <span>{{data.name}}</span>
       </div>
     </div>
