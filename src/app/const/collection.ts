@@ -1,4 +1,4 @@
-import { IVirtualListCollection, IVirtualListStickyMap } from "ng-virtual-list";
+import { IVirtualListCollection, IVirtualListItemConfigMap } from "ng-virtual-list";
 import { generateText, generateWord } from "../utils";
 
 const ROOMS_MAX_ITEMS = 10000, MAX_ITEMS = 10000;
@@ -11,7 +11,7 @@ for (let i = 0, l = ROOMS_MAX_ITEMS; i < l; i++) {
 }
 
 const GROUP_DYNAMIC_ITEMS: IVirtualListCollection = [],
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListItemConfigMap = {};
 
 let groupDynamicIndex = 0;
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
@@ -20,7 +20,9 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
     groupDynamicIndex++;
   }
   GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupDynamicIndex}` : `${id}. ${generateText()}`, incomType });
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = {
+    sticky: type === 'group-header' ? 1 : 0,
+  };
 }
 
 export {

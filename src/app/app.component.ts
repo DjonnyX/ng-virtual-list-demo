@@ -53,7 +53,7 @@ export class AppComponent {
   isEditMode = signal<boolean>(false);
 
   groupDynamicItems = [...GROUP_DYNAMIC_ITEMS];
-  groupDynamicItemsStickyMap = { ...GROUP_DYNAMIC_ITEMS_STICKY_MAP };
+  groupDynamicItemsConfigMap = { ...GROUP_DYNAMIC_ITEMS_STICKY_MAP };
 
   private _scrollParams = signal<{ viewportEndY: number, scrollWeight: number }>({ viewportEndY: 0, scrollWeight: 0 });
 
@@ -155,7 +155,7 @@ export class AppComponent {
 
   private resetList() {
     this.groupDynamicItems = [...GROUP_DYNAMIC_ITEMS];
-    this.groupDynamicItemsStickyMap = { ...GROUP_DYNAMIC_ITEMS_STICKY_MAP };
+    this.groupDynamicItemsConfigMap = { ...GROUP_DYNAMIC_ITEMS_STICKY_MAP };
   }
 
   private _nextIndex = this.groupDynamicItems.length;
@@ -168,12 +168,16 @@ export class AppComponent {
         const writeIndicator = generateWriteIndicator(this._nextIndex);
         this._nextIndex++;
         this.groupDynamicItems = [...this.groupDynamicItems, writeIndicator];
-        this.groupDynamicItemsStickyMap[writeIndicator.id] = 0;
+        this.groupDynamicItemsConfigMap[writeIndicator.id] = {
+          sticky: 0,
+        };
 
         const writeIndicatorShift = generateWriteIndicator(this._nextIndex);
         this._nextIndex++;
         this.groupDynamicItems = [writeIndicatorShift, ...this.groupDynamicItems];
-        this.groupDynamicItemsStickyMap[writeIndicatorShift.id] = 0;
+        this.groupDynamicItemsConfigMap[writeIndicatorShift.id] = {
+          sticky: 0,
+        };
 
         this.increaseVersion();
       }),
@@ -183,7 +187,9 @@ export class AppComponent {
         items.pop();
         // this._nextIndex--;
         items.push(msg);
-        this.groupDynamicItemsStickyMap[msg.id] = 0;
+        this.groupDynamicItemsConfigMap[msg.id] = {
+          sticky: 0,
+        };
 
         items.shift();
         // this._nextIndex--;
@@ -191,7 +197,9 @@ export class AppComponent {
         for (let i = 0, l = 1; i < l; i++) {
           const msgStart = generateMessage(this._nextIndex);
           this._nextIndex++;
-          this.groupDynamicItemsStickyMap[msgStart.id] = 0;
+          this.groupDynamicItemsConfigMap[msgStart.id] = {
+            sticky: 0,
+          };
           items.unshift(msgStart);
         }
 

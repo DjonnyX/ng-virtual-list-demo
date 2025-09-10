@@ -6,7 +6,7 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 19.7.0</span></div>
+    <div class="version"><span>v 19.7.1</span></div>
   </div>
   <div class="container">
 
@@ -29,11 +29,11 @@
         </dock-left>
         <div class="list-wrapper">
           <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-            [trackBy]="'id'" [itemSize]="40" [bufferSize]="30" [bufferSize]="200" [stickyMap]="groupDynamicItemsStickyMap"
+            [trackBy]="'id'" [itemSize]="40" [bufferSize]="30" [bufferSize]="200" [itemConfigMap]="groupDynamicItemsConfigMap"
             [dynamicSize]="true" [snap]="true" (onScroll)="onScrollHandler($event)" snappingMethod="advanced"
             (onScrollEnd)="onScrollEndHandler($event)" [enabledBufferOptimization]="false" (onItemClick)="onClickHandler($event)"></ng-virtual-list>
           <!-- <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [trackBy]="'id'"
-          [itemSize]="40" [bufferSize]="10" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="false" [snap]="true"
+          [itemSize]="40" [bufferSize]="10" [itemConfigMap]="groupDynamicItemsConfigMap" [dynamicSize]="false" [snap]="true"
           (onScroll)="onScrollHandler($event)" (onScroll)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"></ng-virtual-list> -->
         </div>
       </app-drawer>
