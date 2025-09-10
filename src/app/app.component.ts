@@ -5,7 +5,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { NgVirtualListComponent, IVirtualListItem, IRenderVirtualListItem, IScrollEvent, ISize } from 'ng-virtual-list';
 import { BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, from, interval, map, mergeMap, of, switchMap, take, tap, throttleTime } from 'rxjs';
 import { LOGO } from './const';
-import { GROUP_DYNAMIC_ITEMS, GROUP_DYNAMIC_ITEMS_STICKY_MAP, ITEMS } from './const/collection';
+import { GROUP_DYNAMIC_ITEMS, GROUP_DYNAMIC_ITEMS_STICKY_MAP, IItemData, ITEMS } from './const/collection';
 import { generateMessage, generateWriteIndicator } from './utils/collection';
 import { FormsModule } from '@angular/forms';
 import { MenuButtonComponent } from './components/menu-button/menu-button.component';
@@ -49,8 +49,6 @@ export class AppComponent {
   items = ITEMS;
 
   title = signal<string>('Demo');
-
-  isEditMode = signal<boolean>(false);
 
   groupDynamicItems = [...GROUP_DYNAMIC_ITEMS];
   groupDynamicItemsConfigMap = { ...GROUP_DYNAMIC_ITEMS_STICKY_MAP };
@@ -170,6 +168,7 @@ export class AppComponent {
         this.groupDynamicItems = [...this.groupDynamicItems, writeIndicator];
         this.groupDynamicItemsConfigMap[writeIndicator.id] = {
           sticky: 0,
+          selectable: false,
         };
 
         const writeIndicatorShift = generateWriteIndicator(this._nextIndex);
@@ -177,6 +176,7 @@ export class AppComponent {
         this.groupDynamicItems = [writeIndicatorShift, ...this.groupDynamicItems];
         this.groupDynamicItemsConfigMap[writeIndicatorShift.id] = {
           sticky: 0,
+          selectable: false,
         };
 
         this.increaseVersion();
@@ -189,6 +189,7 @@ export class AppComponent {
         items.push(msg);
         this.groupDynamicItemsConfigMap[msg.id] = {
           sticky: 0,
+          selectable: false,
         };
 
         items.shift();
@@ -199,6 +200,7 @@ export class AppComponent {
           this._nextIndex++;
           this.groupDynamicItemsConfigMap[msgStart.id] = {
             sticky: 0,
+            selectable: false,
           };
           items.unshift(msgStart);
         }
@@ -240,6 +242,55 @@ export class AppComponent {
     // }
   }
 
+  onEditItemHandler(e: Event, item: IRenderVirtualListItem | undefined) {
+    e.stopImmediatePropagation();
+    const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
+    if (index > -1) {
+      const items = [...this.groupDynamicItems], item = items[index];
+      items[index] = { ...item, edited: !item.edited };
+      this.groupDynamicItems = items;
+      this.increaseVersion();
+    }
+  }
+
+  onTAClickHandler(e: Event) {
+    e.stopImmediatePropagation();
+  }
+
+  onOutsideClickHandler(e: Event, item: IRenderVirtualListItem<any> | undefined, selected: boolean) {
+    if (!selected) {
+      return;
+    }
+    const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
+    if (index > -1) {
+      const items = [...this.groupDynamicItems], item = items[index];
+      items[index] = { ...item, edited: !selected };
+      this.groupDynamicItems = items;
+      this.increaseVersion();
+    }
+  }
+
+  onEditedHandler(e: any, item: IRenderVirtualListItem<any> | undefined) {
+    const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
+    if (index > -1) {
+      const items = [...this.groupDynamicItems], _item = items[index];
+      items[index] = { ..._item, edited: !_item.edited, name: e.target.value };
+      this.groupDynamicItems = items;
+      this.increaseVersion();
+    }
+  }
+
+  onDeleteItemHandler(e: Event, item: IRenderVirtualListItem | undefined) {
+    e.stopImmediatePropagation();
+    const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
+    if (index > -1) {
+      const items = [...this.groupDynamicItems];
+      items.splice(index, 1);
+      this.groupDynamicItems = items;
+      this.increaseVersion();
+    }
+  }
+
   onRoomClickHandler(item: IRenderVirtualListItem | undefined) {
     this.menuOpened.set(false);
     if (item) {
@@ -255,9 +306,5 @@ export class AppComponent {
 
   onOpenMenuHandler() {
     this.menuOpened.update(v => !v);
-  }
-
-  onEditModeStartHandler() {
-    this.isEditMode.set(true);
   }
 }

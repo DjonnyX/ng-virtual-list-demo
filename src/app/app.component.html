@@ -1,4 +1,3 @@
-@let isEdit = isEditMode();
 <div class="wrapper">
   <div class="vl-section block cap">
     <h1 class="center">ng-virtual-list</h1>
@@ -24,14 +23,17 @@
         <dock-left>
           <div class="list-rooms__container">
             <ng-virtual-list class="list rooms" [items]="items" [itemRenderer]="itemRenderer" [trackBy]="'id'"
-              [itemSize]="40" [dynamicSize]="true" [bufferSize]="100" (onItemClick)="onRoomClickHandler($event)"></ng-virtual-list>
+              [itemSize]="40" [dynamicSize]="true" [bufferSize]="100"
+              (onItemClick)="onRoomClickHandler($event)"></ng-virtual-list>
           </div>
         </dock-left>
         <div class="list-wrapper">
           <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-            [trackBy]="'id'" [itemSize]="40" [bufferSize]="30" [bufferSize]="200" [itemConfigMap]="groupDynamicItemsConfigMap"
-            [dynamicSize]="true" [snap]="true" (onScroll)="onScrollHandler($event)" snappingMethod="advanced"
-            (onScrollEnd)="onScrollEndHandler($event)" [enabledBufferOptimization]="false" (onItemClick)="onClickHandler($event)"></ng-virtual-list>
+            [trackBy]="'id'" [itemSize]="40" [bufferSize]="30" [bufferSize]="200"
+            [itemConfigMap]="groupDynamicItemsConfigMap" [dynamicSize]="true" [snap]="true"
+            (onScroll)="onScrollHandler($event)" snappingMethod="advanced" methodForSelecting="multi-select"
+            (onScrollEnd)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"
+            (onItemClick)="onClickHandler($event)"></ng-virtual-list>
           <!-- <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [trackBy]="'id'"
           [itemSize]="40" [bufferSize]="10" [itemConfigMap]="groupDynamicItemsConfigMap" [dynamicSize]="false" [snap]="true"
           (onScroll)="onScrollHandler($event)" (onScroll)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"></ng-virtual-list> -->
@@ -75,20 +77,52 @@
     @default {
     @let isIn = data.incomType === 'in';
     @let isOut = data.incomType === 'out';
-    @let class = {'in': isIn, 'out': isOut, 'edit': isEdit};
-    <div class="list__container" [ngClass]="class" [longPress]="1000" (longPressFinish)="onEditModeStartHandler()">
+    @let class = {'in': isIn, 'out': isOut, 'edited': data.edited, 'selected': config.selected};
+    <div class="list__container" [ngClass]="class" [longPress]="1000"
+      (click)="onOutsideClickHandler($event, data, config.selected)">
+      <!-- (longPressFinish)="onEditModeStartHandler()"> -->
       <div class="message__container">
-        <!-- @if (isEdit) {
-        <div class="message_delete-button">
-          <div class="el-radio">
-            <input type="radio" name="radio1" id="1_6" value="option" checked="">
-            <label class="el-radio-style" for="1_6"></label>
+        <div class="message" [ngClass]="class">
+          @if (data.edited) {
+          <textarea style="min-width: 100%; min-height: 56px;" [value]="data.name" (click)="onTAClickHandler($event)"
+            (change)="onEditedHandler($event, data)"></textarea>
+          } @else {
+          <span searchHighlight substringClass="search-substring" [text]="data.name"
+            [searchedWords]="searchedWords()">{{data.name}}</span>
+          }
+        </div>
+        @if (config.selected) {
+        <div class="flex"></div>
+        <div class="message__controls">
+          <div class="ctrl__button edit-icon" (click)="onEditItemHandler($event, data)">
+            <svg fill="inherit" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink" width="18px" height="18px" viewBox="0 0 528.899 528.899"
+              xml:space="preserve">
+              <g>
+                <path d="M328.883,89.125l107.59,107.589l-272.34,272.34L56.604,361.465L328.883,89.125z M518.113,63.177l-47.981-47.981
+		c-18.543-18.543-48.653-18.543-67.259,0l-45.961,45.961l107.59,107.59l53.611-53.611
+		C532.495,100.753,532.495,77.559,518.113,63.177z M0.3,512.69c-1.958,8.812,5.998,16.708,14.811,14.565l119.891-29.069
+		L27.473,390.597L0.3,512.69z" />
+              </g>
+            </svg>
+          </div>
+          <div class="ctrl__button del-icon" (click)="onDeleteItemHandler($event, data)">
+            <svg fill="inherit" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink" width="18px" height="18px" viewBox="0 0 900.5 900.5"
+              xml:space="preserve">
+              <g>
+                <path
+                  d="M176.415,880.5c0,11.046,8.954,20,20,20h507.67c11.046,0,20-8.954,20-20V232.487h-547.67V880.5L176.415,880.5z
+		 M562.75,342.766h75v436.029h-75V342.766z M412.75,342.766h75v436.029h-75V342.766z M262.75,342.766h75v436.029h-75V342.766z" />
+                <path
+                  d="M618.825,91.911V20c0-11.046-8.954-20-20-20h-297.15c-11.046,0-20,8.954-20,20v71.911v12.5v12.5H141.874
+		c-11.046,0-20,8.954-20,20v50.576c0,11.045,8.954,20,20,20h34.541h547.67h34.541c11.046,0,20-8.955,20-20v-50.576
+		c0-11.046-8.954-20-20-20H618.825v-12.5V91.911z M543.825,112.799h-187.15v-8.389v-12.5V75h187.15v16.911v12.5V112.799z" />
+              </g>
+            </svg>
           </div>
         </div>
-        } -->
-        <div class="message" [ngClass]="class">
-          <span searchHighlight substringClass="search-substring" [text]="data.name" [searchedWords]="searchedWords()">{{data.name}}</span>
-        </div>
+        }
       </div>
     </div>
     }
@@ -124,3 +158,33 @@
     }
   </ng-template>
 </div>
+
+<ng-template #controls>
+  <div class="edit-icon">
+    <svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink" width="800px" height="800px" viewBox="0 0 528.899 528.899"
+      xml:space="preserve">
+      <g>
+        <path d="M328.883,89.125l107.59,107.589l-272.34,272.34L56.604,361.465L328.883,89.125z M518.113,63.177l-47.981-47.981
+		c-18.543-18.543-48.653-18.543-67.259,0l-45.961,45.961l107.59,107.59l53.611-53.611
+		C532.495,100.753,532.495,77.559,518.113,63.177z M0.3,512.69c-1.958,8.812,5.998,16.708,14.811,14.565l119.891-29.069
+		L27.473,390.597L0.3,512.69z" />
+      </g>
+    </svg>
+  </div>
+  <div class="del-icon">
+    <svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink" width="800px" height="800px" viewBox="0 0 900.5 900.5"
+      xml:space="preserve">
+      <g>
+        <path
+          d="M176.415,880.5c0,11.046,8.954,20,20,20h507.67c11.046,0,20-8.954,20-20V232.487h-547.67V880.5L176.415,880.5z
+		 M562.75,342.766h75v436.029h-75V342.766z M412.75,342.766h75v436.029h-75V342.766z M262.75,342.766h75v436.029h-75V342.766z" />
+        <path
+          d="M618.825,91.911V20c0-11.046-8.954-20-20-20h-297.15c-11.046,0-20,8.954-20,20v71.911v12.5v12.5H141.874
+		c-11.046,0-20,8.954-20,20v50.576c0,11.045,8.954,20,20,20h34.541h547.67h34.541c11.046,0,20-8.955,20-20v-50.576
+		c0-11.046-8.954-20-20-20H618.825v-12.5V91.911z M543.825,112.799h-187.15v-8.389v-12.5V75h187.15v16.911v12.5V112.799z" />
+      </g>
+    </svg>
+  </div>
+</ng-template>
