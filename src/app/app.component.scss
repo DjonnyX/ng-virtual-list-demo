@@ -112,6 +112,11 @@
     }
 }
 
+.stats {
+    position: relative;
+    width: 100%;
+}
+
 .container {
     display: grid;
     // grid-template-rows: auto 1fr;
@@ -294,10 +299,18 @@
                 background-color: #ffffff29;
                 backdrop-filter: blur(5px);
                 border-radius: 12px;
+                transition: background-color 150ms ease-out;
+
+                &.in {
+                    border-bottom-left-radius: 0px;
+                }
+
+                &.out {
+                    border-bottom-right-radius: 0px;
+                }
             }
 
             .message.selected {
-                margin: 8px 10px;
                 align-self: center;
                 background-color: #c4dfff;
             }
@@ -311,8 +324,9 @@
 
         .message__controls {
             display: flex;
-            gap: 10px;
-            padding: 12px;
+            gap: 4px;
+            padding: 4px;
+            flex-wrap: wrap;
         }
 
         .flex {
@@ -387,6 +401,7 @@
         &>span {
             height: auto;
             background-color: #ffffff5c;
+            backdrop-filter: blur(5px);
             color: #ffffff;
             padding: 6px 14px;
             border-radius: 14px;
