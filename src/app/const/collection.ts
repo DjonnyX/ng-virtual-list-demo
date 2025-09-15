@@ -1,5 +1,10 @@
-import { IVirtualListCollection, IVirtualListStickyMap } from "ng-virtual-list";
+import { IVirtualListCollection, IVirtualListItemConfigMap } from "ng-virtual-list";
 import { generateText, generateWord } from "../utils";
+
+export interface IItemData {
+  name: string;
+  edited: boolean;
+}
 
 const ROOMS_MAX_ITEMS = 10000, MAX_ITEMS = 10000;
 
@@ -10,8 +15,8 @@ for (let i = 0, l = ROOMS_MAX_ITEMS; i < l; i++) {
   ITEMS.push({ id, name: `${generateWord(30, true)}` });
 }
 
-const GROUP_DYNAMIC_ITEMS: IVirtualListCollection = [],
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListStickyMap = {};
+const GROUP_DYNAMIC_ITEMS: IVirtualListCollection<IItemData> = [],
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP: IVirtualListItemConfigMap = {};
 
 let groupDynamicIndex = 0;
 for (let i = 0, l = MAX_ITEMS; i < l; i++) {
@@ -19,8 +24,15 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   if (type === 'group-header') {
     groupDynamicIndex++;
   }
-  GROUP_DYNAMIC_ITEMS.push({ id, type, name: type === 'group-header' ? `Group ${groupDynamicIndex}` : `${id}. ${generateText()}`, incomType });
-  GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = type === 'group-header' ? 1 : 0;
+  const isGroup = type === 'group-header', hasImage = isGroup ? false : Boolean(Math.round(Math.random() * 0.75));
+  GROUP_DYNAMIC_ITEMS.push({
+    id, type, edited: false, name: isGroup ? `Group ${groupDynamicIndex}` : `${id}. ${generateText()}`,
+    image: hasImage ? 'https://ng-virtual-list-chat-demo.eugene-grebennikov.pro/media/logo.png' : undefined, incomType,
+  });
+  GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = {
+    sticky: type === 'group-header' ? 1 : 0,
+    selectable: type !== 'group-header',
+  };
 }
 
 export {

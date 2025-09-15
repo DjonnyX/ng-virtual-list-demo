@@ -1,4 +1,3 @@
-@let isEdit = isEditMode();
 <div class="wrapper">
   <div class="vl-section block cap">
     <h1 class="center">ng-virtual-list</h1>
@@ -6,8 +5,9 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 19.6.0</span></div>
+    <div class="version"><span>v 19.7.4</span></div>
   </div>
+  <div #stats class="stats"></div>
   <div class="container">
 
     <div class="toolbar">
@@ -24,76 +24,112 @@
         <dock-left>
           <div class="list-rooms__container">
             <ng-virtual-list class="list rooms" [items]="items" [itemRenderer]="itemRenderer" [trackBy]="'id'"
-              [itemSize]="40" [dynamicSize]="true" [bufferSize]="100" (onItemClick)="onRoomClickHandler($event)"></ng-virtual-list>
+              [itemSize]="40" [dynamicSize]="true" [bufferSize]="60"
+              (onItemClick)="onRoomClickHandler($event)"></ng-virtual-list>
           </div>
         </dock-left>
         <div class="list-wrapper">
           <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-            [trackBy]="'id'" [itemSize]="40" [bufferSize]="30" [bufferSize]="200" [stickyMap]="groupDynamicItemsStickyMap"
-            [dynamicSize]="true" [snap]="true" (onScroll)="onScrollHandler($event)" snappingMethod="advanced"
-            (onScrollEnd)="onScrollEndHandler($event)" [enabledBufferOptimization]="false" (onItemClick)="onClickHandler($event)"></ng-virtual-list>
-          <!-- <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer" [trackBy]="'id'"
-          [itemSize]="40" [bufferSize]="10" [stickyMap]="groupDynamicItemsStickyMap" [dynamicSize]="false" [snap]="true"
-          (onScroll)="onScrollHandler($event)" (onScroll)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"></ng-virtual-list> -->
+            [trackBy]="'id'" [itemSize]="40" [bufferSize]="30" [bufferSize]="120"
+            [itemConfigMap]="groupDynamicItemsConfigMap" [dynamicSize]="true" [snap]="true"
+            (onScroll)="onScrollHandler($event)" snappingMethod="advanced" methodForSelecting="multi-select"
+            (onScrollEnd)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"
+            (onItemClick)="onClickHandler($event)"></ng-virtual-list>
         </div>
       </app-drawer>
     </div>
   </div>
 
-  <ng-template #groupItemRenderer let-data="data" let-config="config">
+  <ng-template #groupItemRenderer let-data="data" let-measures="measures" let-config="config">
     @if (data) {
-    @switch (data.type) {
-    @case ("write-indicator") {
-    <div class="list__windicator-container">
-      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="10" viewBox="0 0 120 30" fill="#fff">
-        <circle cx="10" cy="10" r="10">
-          <animate id="r0" attributeName="r" from="10" to="10" begin="0.5s;r0.end+0.5s" dur="0.5s" values="8;10;8"
-            calcMode="linear" repeatCount="indefinite" />
-          <animate id="r1" attributeName="fill-opacity" from="1" to="1" begin="0.5s;r1.end+0.5s" dur="0.5s"
-            values="0;1;0" calcMode="linear" repeatCount="indefinite" />
-        </circle>
-        <circle cx="50" cy="10" r="10">
-          <animate id="r2" attributeName="r" from="10" to="10" begin="0.25s;r2.end+0.75s" dur="0.5s" values="8;10;8"
-            calcMode="linear" repeatCount="indefinite" />
-          <animate id="r3" attributeName="fill-opacity" from="1" to="1" begin="0.25s;r3.end+0.75s" dur="0.5s"
-            values="0;1;0" calcMode="linear" repeatCount="indefinite" />
-        </circle>
-        <circle cx="90" cy="10" r="10">
-          <animate id="r4" attributeName="r" from="10" to="10" begin="0s;r4.end+1s" dur="0.5s" values="8;10;8"
-            calcMode="linear" repeatCount="indefinite" />
-          <animate id="r5" attributeName="fill-opacity" from="1" to="1" begin="0s;r5.end+1s" dur="0.5s" values="0;1;0"
-            calcMode="linear" repeatCount="indefinite" />
-        </circle>
-      </svg>
-    </div>
-    }
-    @case ("group-header") {
-    <div class="list__group-container" [ngClass]="{'snapped': config.snapped, 'snapped-out': config.snappedOut}">
-      <span>{{data.name}}</span>
-    </div>
-    }
-    @default {
-    @let isIn = data.incomType === 'in';
-    @let isOut = data.incomType === 'out';
-    @let class = {'in': isIn, 'out': isOut, 'edit': isEdit};
-    <div class="list__container" [ngClass]="class" [longPress]="1000" (longPressFinish)="onEditModeStartHandler()">
-      <div class="message__container">
-        <!-- @if (isEdit) {
-        <div class="message_delete-button">
-          <div class="el-radio">
-            <input type="radio" name="radio1" id="1_6" value="option" checked="">
-            <label class="el-radio-style" for="1_6"></label>
+      @switch (data.type) {
+        @case ("write-indicator") {
+          <div class="list__windicator-container">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="10" viewBox="0 0 120 30" fill="#fff">
+              <circle cx="10" cy="10" r="10">
+                <animate id="r0" attributeName="r" from="10" to="10" begin="0.5s;r0.end+0.5s" dur="0.5s" values="8;10;8"
+                  calcMode="linear" repeatCount="indefinite" />
+                <animate id="r1" attributeName="fill-opacity" from="1" to="1" begin="0.5s;r1.end+0.5s" dur="0.5s"
+                  values="0;1;0" calcMode="linear" repeatCount="indefinite" />
+              </circle>
+              <circle cx="50" cy="10" r="10">
+                <animate id="r2" attributeName="r" from="10" to="10" begin="0.25s;r2.end+0.75s" dur="0.5s" values="8;10;8"
+                  calcMode="linear" repeatCount="indefinite" />
+                <animate id="r3" attributeName="fill-opacity" from="1" to="1" begin="0.25s;r3.end+0.75s" dur="0.5s"
+                  values="0;1;0" calcMode="linear" repeatCount="indefinite" />
+              </circle>
+              <circle cx="90" cy="10" r="10">
+                <animate id="r4" attributeName="r" from="10" to="10" begin="0s;r4.end+1s" dur="0.5s" values="8;10;8"
+                  calcMode="linear" repeatCount="indefinite" />
+                <animate id="r5" attributeName="fill-opacity" from="1" to="1" begin="0s;r5.end+1s" dur="0.5s" values="0;1;0"
+                  calcMode="linear" repeatCount="indefinite" />
+              </circle>
+            </svg>
           </div>
-        </div>
-        } -->
-        <div class="message" [ngClass]="class">
-          <span searchHighlight substringClass="search-substring" [text]="data.name" [searchedWords]="searchedWords()">{{data.name}}</span>
-        </div>
-      </div>
-    </div>
-    }
-    }
-    }
+        }
+        @case ("group-header") {
+          <div class="list__group-container" [ngClass]="{'snapped': config.snapped, 'snapped-out': config.snappedOut}">
+            <span>{{data.name}}</span>
+          </div>
+        }
+        @default {
+          @let isIn = data.incomType === 'in';
+          @let isOut = data.incomType === 'out';
+          @let class = {'in': isIn, 'out': isOut, 'edited': data.edited, 'selected': config.selected, focused: config.focus};
+          <div class="list__container" [ngClass]="class" [longPress]="1000">
+            <!-- (longPressFinish)="onEditModeStartHandler()"> -->
+            <div class="message__container" [ngClass]="class">
+              <div class="message" [ngClass]="class">
+                @if (data.edited) {
+                  @if (data.image) {
+                    <div class="complex-message">
+                      <img [src]="data.image" />
+                      <textarea clickOutside [clickOutsideItem]="data"
+                    (onClickOutside)="onOutsideClickHandler($event, data, config.selected)"
+                    [ngStyle]="{height: getContentHeight(measures.height, true) + 'px'}" [value]="data.name"
+                    (click)="onTAClickHandler($event)" (onOutsideClose)="onEditingCloseHandler($event)"
+                    (change)="onEditedHandler($event, data)"></textarea>
+                    </div>
+                  } @else {
+                    <textarea clickOutside [clickOutsideItem]="data"
+                    (onClickOutside)="onOutsideClickHandler($event, data, config.selected)"
+                    [ngStyle]="{height: getContentHeight(measures.height) + 'px'}" [value]="data.name"
+                    (click)="onTAClickHandler($event)" (onOutsideClose)="onEditingCloseHandler($event)"
+                    (change)="onEditedHandler($event, data)"></textarea>
+                  }
+                } @else {
+                  @if (data.image) {
+                    <div class="complex-message">
+                      <img [src]="data.image" />
+                      <span searchHighlight substringClass="search-substring" [text]="data.name" [searchedWords]="searchedWords()"
+                        (click)="onEditItemHandler($event, data, config.selected)">{{data.name}}</span>
+                    </div>
+                  } @else {
+                    <span searchHighlight substringClass="search-substring" [text]="data.name" [searchedWords]="searchedWords()"
+                      (click)="onEditItemHandler($event, data, config.selected)">{{data.name}}</span>
+                  }
+                }
+              </div>
+                @if (config.selected) {
+                  <div class="flex"></div>
+                  <div class="message__controls">
+                    <div class="ctrl__button del-icon" (click)="onDeleteItemHandler($event, data)">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="inherit" width="16" height="16" viewBox="0 0 24 24">
+                        <path fill="inherit"
+                          d="M10 12.25a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5a.75.75 0 0 1 .75-.75M13.75 13a.75.75 0 0 1 1.5 0v5a.75.75 0 0 1-1.5 0z">
+                        </path>
+                        <path fill="inherit" fill-rule="evenodd"
+                          d="M7.559 4.5H3.75A1.75 1.75 0 0 0 2 6.25v2C2 9.217 2.784 10 3.75 10h.303l.812 10.953A2.75 2.75 0 0 0 7.607 23.5h9.286a2.75 2.75 0 0 0 2.742-2.547L20.446 10h.304a1.75 1.75 0 0 0 1.75-1.75v-2a1.75 1.75 0 0 0-1.75-1.75h-3.809a4.751 4.751 0 0 0-9.382 0m7.854 0a3.251 3.251 0 0 0-6.326 0zM3.75 8.5h17a.25.25 0 0 0 .25-.25v-2a.25.25 0 0 0-.25-.25h-17a.25.25 0 0 0-.25.25v2c0 .138.112.25.25.25m14.39 12.342L18.941 10H5.558l.803 10.842A1.25 1.25 0 0 0 7.607 22h9.286a1.25 1.25 0 0 0 1.246-1.158"
+                          clip-rule="evenodd"></path>
+                      </svg>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        }
+      }
   </ng-template>
 
   <ng-template #itemRenderer let-data="data" let-config="config">
@@ -124,3 +160,33 @@
     }
   </ng-template>
 </div>
+
+<ng-template #controls>
+  <div class="edit-icon">
+    <svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink" width="800px" height="800px" viewBox="0 0 528.899 528.899"
+      xml:space="preserve">
+      <g>
+        <path d="M328.883,89.125l107.59,107.589l-272.34,272.34L56.604,361.465L328.883,89.125z M518.113,63.177l-47.981-47.981
+		c-18.543-18.543-48.653-18.543-67.259,0l-45.961,45.961l107.59,107.59l53.611-53.611
+		C532.495,100.753,532.495,77.559,518.113,63.177z M0.3,512.69c-1.958,8.812,5.998,16.708,14.811,14.565l119.891-29.069
+		L27.473,390.597L0.3,512.69z" />
+      </g>
+    </svg>
+  </div>
+  <div class="del-icon">
+    <svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink" width="800px" height="800px" viewBox="0 0 900.5 900.5"
+      xml:space="preserve">
+      <g>
+        <path
+          d="M176.415,880.5c0,11.046,8.954,20,20,20h507.67c11.046,0,20-8.954,20-20V232.487h-547.67V880.5L176.415,880.5z
+		 M562.75,342.766h75v436.029h-75V342.766z M412.75,342.766h75v436.029h-75V342.766z M262.75,342.766h75v436.029h-75V342.766z" />
+        <path
+          d="M618.825,91.911V20c0-11.046-8.954-20-20-20h-297.15c-11.046,0-20,8.954-20,20v71.911v12.5v12.5H141.874
+		c-11.046,0-20,8.954-20,20v50.576c0,11.045,8.954,20,20,20h34.541h547.67h34.541c11.046,0,20-8.955,20-20v-50.576
+		c0-11.046-8.954-20-20-20H618.825v-12.5V91.911z M543.825,112.799h-187.15v-8.389v-12.5V75h187.15v16.911v12.5V112.799z" />
+      </g>
+    </svg>
+  </div>
+</ng-template>

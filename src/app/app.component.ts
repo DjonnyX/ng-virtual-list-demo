@@ -1,34 +1,69 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, Signal, signal, viewChild } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, ElementRef, Signal, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 // import { NgVirtualListComponent, IScrollEvent, ISize, IVirtualListItem } from '../../../virtual-list/projects/ng-virtual-list/src/public-api';
-import { NgVirtualListComponent, IVirtualListItem, IRenderVirtualListItem, IScrollEvent, ISize } from 'ng-virtual-list';
-import { BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, from, interval, map, mergeMap, of, switchMap, take, tap, throttleTime } from 'rxjs';
+import { NgVirtualListComponent, IVirtualListItem, IRenderVirtualListItem, IScrollEvent, ISize, Id } from 'ng-virtual-list';
+import {
+  BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, from, interval,
+  map, mergeMap, of, switchMap, take, tap, throttleTime
+} from 'rxjs';
 import { LOGO } from './const';
-import { GROUP_DYNAMIC_ITEMS, GROUP_DYNAMIC_ITEMS_STICKY_MAP, ITEMS } from './const/collection';
+import { GROUP_DYNAMIC_ITEMS, GROUP_DYNAMIC_ITEMS_STICKY_MAP, IItemData, ITEMS } from './const/collection';
 import { generateMessage, generateWriteIndicator } from './utils/collection';
 import { FormsModule } from '@angular/forms';
 import { MenuButtonComponent } from './components/menu-button/menu-button.component';
 import { SearchComponent } from './components/search/search.component';
 import { DrawerComponent, DockMode, TDockMode } from "./components/drawer/drawer.component";
-import { LongPressDirective } from './directives';
+import { ClickOutsideDirective, LongPressDirective } from './directives';
 import { SearchHighlightDirective } from './directives/search-highlight.directive';
+import { ClickOutsideService } from './directives/click-outside.service';
+import Stats from 'stats.js';
 
 const SNAP_HEIGHT = 100;
+
+// FPS
+(function () {
+  const stats = new Stats();
+  stats.showPanel(0);
+  document.body.querySelector('.stats')?.appendChild(stats.dom);
+  stats.dom.style.position = 'relative';
+  stats.dom.style.pointerEvents = 'none';
+  stats.dom.style.width = '80px';
+
+  const stats1 = new Stats();
+  stats1.showPanel(2);
+  document.body.querySelector('.stats')?.appendChild(stats1.dom);
+  stats1.dom.style.position = 'relative';
+  stats1.dom.style.pointerEvents = 'none';
+  stats1.dom.style.width = '80px';
+
+  function animate() {
+    stats.begin();
+    stats.end();
+    stats1.begin();
+    stats1.end();
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+})();
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgVirtualListComponent, SearchHighlightDirective,
-    MenuButtonComponent, SearchComponent, DrawerComponent, LongPressDirective],
+  imports: [CommonModule, FormsModule, NgVirtualListComponent, SearchHighlightDirective, MenuButtonComponent,
+    SearchComponent, DrawerComponent, LongPressDirective, ClickOutsideDirective,
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  providers: [ClickOutsideService],
 })
 export class AppComponent {
   readonly logo = LOGO;
 
   protected _listContainerRef = viewChild('dynamicList', { read: NgVirtualListComponent });
+
+  protected _stats = viewChild('stats', { read: ElementRef<HTMLDivElement> });
 
   private _$isEndOfListPosition = new BehaviorSubject<boolean>(true);
   readonly $isEndOfListPosition = this._$isEndOfListPosition;
@@ -50,14 +85,12 @@ export class AppComponent {
 
   title = signal<string>('Demo');
 
-  isEditMode = signal<boolean>(false);
-
   groupDynamicItems = [...GROUP_DYNAMIC_ITEMS];
-  groupDynamicItemsStickyMap = { ...GROUP_DYNAMIC_ITEMS_STICKY_MAP };
+  groupDynamicItemsConfigMap = { ...GROUP_DYNAMIC_ITEMS_STICKY_MAP };
 
   private _scrollParams = signal<{ viewportEndY: number, scrollWeight: number }>({ viewportEndY: 0, scrollWeight: 0 });
 
-  constructor() {
+  constructor(private _service: ClickOutsideService) {
     const list = this._listContainerRef;
 
     this.dockMode = computed(() => {
@@ -84,9 +117,7 @@ export class AppComponent {
         if (this._$isEndOfListPosition.getValue()) {
           list!.scrollToEnd('instant');
         }
-
-        // this.show.set(version % 2 === 0);
-      })
+      }),
     ).subscribe();
 
     combineLatest([$virtualList, toObservable(this.search)]).pipe(
@@ -105,14 +136,13 @@ export class AppComponent {
             }
           }
         }
-      })
+      }),
     ).subscribe();
 
     $virtualList.pipe(
       delay(100),
       mergeMap(() => this.write()),
     ).subscribe();
-
 
     from(interval(2000)).pipe(
       mergeMap(() => this.write()),
@@ -125,9 +155,7 @@ export class AppComponent {
         if (list) {
           bounds = list.getItemBounds(this.groupDynamicItems[this.groupDynamicItems.length - 1].id);
         }
-
         const height = (bounds?.height ?? 0);
-
         return of((viewportEndY + height + SNAP_HEIGHT) >= scrollWeight);
       }),
       tap(v => {
@@ -149,13 +177,17 @@ export class AppComponent {
     ).subscribe();
   }
 
+  getContentHeight(v: number, hasImage: boolean = false) {
+    return Math.ceil(v) - 34 - (hasImage ? 72 : 0);
+  }
+
   onSearchHandler(pattern: string) {
     this.search.set(pattern);
   }
 
   private resetList() {
     this.groupDynamicItems = [...GROUP_DYNAMIC_ITEMS];
-    this.groupDynamicItemsStickyMap = { ...GROUP_DYNAMIC_ITEMS_STICKY_MAP };
+    this.groupDynamicItemsConfigMap = { ...GROUP_DYNAMIC_ITEMS_STICKY_MAP };
   }
 
   private _nextIndex = this.groupDynamicItems.length;
@@ -168,12 +200,18 @@ export class AppComponent {
         const writeIndicator = generateWriteIndicator(this._nextIndex);
         this._nextIndex++;
         this.groupDynamicItems = [...this.groupDynamicItems, writeIndicator];
-        this.groupDynamicItemsStickyMap[writeIndicator.id] = 0;
+        this.groupDynamicItemsConfigMap[writeIndicator.id] = {
+          sticky: 0,
+          selectable: false,
+        };
 
         const writeIndicatorShift = generateWriteIndicator(this._nextIndex);
         this._nextIndex++;
         this.groupDynamicItems = [writeIndicatorShift, ...this.groupDynamicItems];
-        this.groupDynamicItemsStickyMap[writeIndicatorShift.id] = 0;
+        this.groupDynamicItemsConfigMap[writeIndicatorShift.id] = {
+          sticky: 0,
+          selectable: false,
+        };
 
         this.increaseVersion();
       }),
@@ -183,7 +221,10 @@ export class AppComponent {
         items.pop();
         // this._nextIndex--;
         items.push(msg);
-        this.groupDynamicItemsStickyMap[msg.id] = 0;
+        this.groupDynamicItemsConfigMap[msg.id] = {
+          sticky: 0,
+          selectable: true,
+        };
 
         items.shift();
         // this._nextIndex--;
@@ -191,14 +232,17 @@ export class AppComponent {
         for (let i = 0, l = 1; i < l; i++) {
           const msgStart = generateMessage(this._nextIndex);
           this._nextIndex++;
-          this.groupDynamicItemsStickyMap[msgStart.id] = 0;
+          this.groupDynamicItemsConfigMap[msgStart.id] = {
+            sticky: 0,
+            selectable: true,
+          };
           items.unshift(msgStart);
         }
 
         this.groupDynamicItems = items;
 
         this.increaseVersion();
-      })
+      }),
     );
   }
 
@@ -232,6 +276,65 @@ export class AppComponent {
     // }
   }
 
+  onEditItemHandler(e: Event, item: IRenderVirtualListItem | undefined, selected: boolean) {
+    if (selected) {
+      e.stopImmediatePropagation();
+    }
+    const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
+    if (index > -1) {
+      const items = [...this.groupDynamicItems], item = items[index];
+      items[index] = { ...item, edited: selected ? !item.edited : false };
+      this.groupDynamicItems = items;
+      this.increaseVersion();
+    }
+  }
+
+  onTAClickHandler(e: Event) {
+    e.stopImmediatePropagation();
+  }
+
+  onOutsideClickHandler(e: Event, item: IRenderVirtualListItem<any> | undefined, selected: boolean) {
+    const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
+    if (index > -1) {
+      const items = [...this.groupDynamicItems], item = items[index];
+      items[index] = { ...item, edited: false };
+      this.groupDynamicItems = items;
+      this.increaseVersion();
+    }
+    this._service.activeTarget = null;
+  }
+
+  onEditingCloseHandler(data: { target: any; item: IItemData & { id: Id }; }) {
+    const index = this.groupDynamicItems.findIndex(({ id }) => id === data.item.id);
+    if (index > -1) {
+      const items = [...this.groupDynamicItems], _item = items[index];
+      items[index] = { ..._item, edited: false, name: data.target.value };
+      this.groupDynamicItems = items;
+      this.increaseVersion();
+    }
+  }
+
+  onEditedHandler(e: any, item: IRenderVirtualListItem<any> | undefined) {
+    const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
+    if (index > -1) {
+      const items = [...this.groupDynamicItems], _item = items[index];
+      items[index] = { ..._item, edited: !_item.edited, name: e.target.value };
+      this.groupDynamicItems = items;
+      this.increaseVersion();
+    }
+  }
+
+  onDeleteItemHandler(e: Event, item: IRenderVirtualListItem | undefined) {
+    e.stopImmediatePropagation();
+    const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
+    if (index > -1) {
+      const items = [...this.groupDynamicItems];
+      items.splice(index, 1);
+      this.groupDynamicItems = items;
+      this.increaseVersion();
+    }
+  }
+
   onRoomClickHandler(item: IRenderVirtualListItem | undefined) {
     this.menuOpened.set(false);
     if (item) {
@@ -247,9 +350,5 @@ export class AppComponent {
 
   onOpenMenuHandler() {
     this.menuOpened.update(v => !v);
-  }
-
-  onEditModeStartHandler() {
-    this.isEditMode.set(true);
   }
 }
