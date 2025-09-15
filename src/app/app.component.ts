@@ -2,8 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, ElementRef, Signal, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 // import { NgVirtualListComponent, IScrollEvent, ISize, IVirtualListItem } from '../../../virtual-list/projects/ng-virtual-list/src/public-api';
-import { NgVirtualListComponent, IVirtualListItem, IRenderVirtualListItem, IScrollEvent, ISize } from 'ng-virtual-list';
-import { BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, from, interval, map, mergeMap, of, switchMap, take, tap, throttleTime } from 'rxjs';
+import { NgVirtualListComponent, IVirtualListItem, IRenderVirtualListItem, IScrollEvent, ISize, Id } from 'ng-virtual-list';
+import {
+  BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, from, interval,
+  map, mergeMap, of, switchMap, take, tap, throttleTime
+} from 'rxjs';
 import { LOGO } from './const';
 import { GROUP_DYNAMIC_ITEMS, GROUP_DYNAMIC_ITEMS_STICKY_MAP, IItemData, ITEMS } from './const/collection';
 import { generateMessage, generateWriteIndicator } from './utils/collection';
@@ -14,19 +17,34 @@ import { DrawerComponent, DockMode, TDockMode } from "./components/drawer/drawer
 import { ClickOutsideDirective, LongPressDirective } from './directives';
 import { SearchHighlightDirective } from './directives/search-highlight.directive';
 import { ClickOutsideService } from './directives/click-outside.service';
-import { FPS } from 'yy-fps';
+import Stats from 'stats.js';
 
 const SNAP_HEIGHT = 100;
 
 // FPS
 (function () {
-  const fps = new FPS();
-  fps.div.parentElement!.style.right = 'calc((100% / 2) - 50px)';
-  function update() {
-    fps.frame();
-    requestAnimationFrame(update);
+  const stats = new Stats();
+  stats.showPanel(0);
+  document.body.querySelector('.stats')?.appendChild(stats.dom);
+  stats.dom.style.position = 'relative';
+  stats.dom.style.pointerEvents = 'none';
+  stats.dom.style.width = '80px';
+
+  const stats1 = new Stats();
+  stats1.showPanel(2);
+  document.body.querySelector('.stats')?.appendChild(stats1.dom);
+  stats1.dom.style.position = 'relative';
+  stats1.dom.style.pointerEvents = 'none';
+  stats1.dom.style.width = '80px';
+
+  function animate() {
+    stats.begin();
+    stats.end();
+    stats1.begin();
+    stats1.end();
+    requestAnimationFrame(animate);
   }
-  update();
+  requestAnimationFrame(animate);
 })();
 
 @Component({
@@ -99,9 +117,7 @@ export class AppComponent {
         if (this._$isEndOfListPosition.getValue()) {
           list!.scrollToEnd('instant');
         }
-
-        // this.show.set(version % 2 === 0);
-      })
+      }),
     ).subscribe();
 
     combineLatest([$virtualList, toObservable(this.search)]).pipe(
@@ -120,14 +136,13 @@ export class AppComponent {
             }
           }
         }
-      })
+      }),
     ).subscribe();
 
     $virtualList.pipe(
       delay(100),
       mergeMap(() => this.write()),
     ).subscribe();
-
 
     from(interval(2000)).pipe(
       mergeMap(() => this.write()),
@@ -140,9 +155,7 @@ export class AppComponent {
         if (list) {
           bounds = list.getItemBounds(this.groupDynamicItems[this.groupDynamicItems.length - 1].id);
         }
-
         const height = (bounds?.height ?? 0);
-
         return of((viewportEndY + height + SNAP_HEIGHT) >= scrollWeight);
       }),
       tap(v => {
@@ -162,6 +175,10 @@ export class AppComponent {
         document.documentElement.style.setProperty('--viewport-alpha', '1');
       }),
     ).subscribe();
+  }
+
+  getContentHeight(v: number, hasImage: boolean = false) {
+    return Math.ceil(v) - 34 - (hasImage ? 72 : 0);
   }
 
   onSearchHandler(pattern: string) {
@@ -225,7 +242,7 @@ export class AppComponent {
         this.groupDynamicItems = items;
 
         this.increaseVersion();
-      })
+      }),
     );
   }
 
@@ -263,12 +280,6 @@ export class AppComponent {
     if (selected) {
       e.stopImmediatePropagation();
     }
-    // if (this._service.activeTarget !== e.target) {
-    //   this._service.activeTarget = null;
-    //   this.onOutsideClickHandler(e, item, selected);
-    //   this._service.activeTarget = e.target as HTMLElement;
-    //   return;
-    // }
     const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
     if (index > -1) {
       const items = [...this.groupDynamicItems], item = items[index];
@@ -291,6 +302,16 @@ export class AppComponent {
       this.increaseVersion();
     }
     this._service.activeTarget = null;
+  }
+
+  onEditingCloseHandler(data: { target: any; item: IItemData & { id: Id }; }) {
+    const index = this.groupDynamicItems.findIndex(({ id }) => id === data.item.id);
+    if (index > -1) {
+      const items = [...this.groupDynamicItems], _item = items[index];
+      items[index] = { ..._item, edited: false, name: data.target.value };
+      this.groupDynamicItems = items;
+      this.increaseVersion();
+    }
   }
 
   onEditedHandler(e: any, item: IRenderVirtualListItem<any> | undefined) {

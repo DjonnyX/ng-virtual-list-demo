@@ -217,6 +217,10 @@
         scroll-behavior: auto;
     }
 
+    &::part(item-focused) {
+        outline: none;
+    }
+
     &__windicator-container {
         height: 40px;
         width: 100%;
@@ -252,7 +256,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            fill: #38407c;
+            fill: #14183b;
+            transition: background-color 150ms ease-out;
 
             &:hover {
                 background-color: #ffffff3a;
@@ -279,25 +284,33 @@
 
         .message {
             textarea {
+                font-family: inherit;
+                font-size: inherit;
+                max-width: 100%;
                 min-width: 100%;
-                min-height: 56px;
+                min-height: 18px;
                 outline: none;
                 border: none;
-                background: #b3cdeb;
-                padding: 2px 6px;
-                box-sizing: border-box;
+                background: #fff0b969;
+                padding: 0; //2px 6px;
+                margin: 0;
+                box-sizing: content-box;
             }
         }
 
         .message.edited {
             width: 100%;
-            min-height: 34px;
+            min-height: 20px;
+        }
+
+        .message.focused {
+            box-shadow: 1px 2px 8px 4px rgba(0, 0, 0, 0.25);
         }
 
         &.selected {
             .message__container {
                 background-color: #ffffff29;
-                backdrop-filter: blur(5px);
+                // backdrop-filter: blur(5px);
                 border-radius: 12px;
                 transition: background-color 150ms ease-out;
 
@@ -327,6 +340,17 @@
             gap: 4px;
             padding: 4px;
             flex-wrap: wrap;
+        }
+
+        .complex-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            img {
+                height: 72px;
+            }
         }
 
         .flex {

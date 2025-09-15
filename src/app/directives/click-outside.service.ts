@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent, Subject, tap } from 'rxjs';
+import { IItemData } from '../const/collection';
 
 @Injectable({
     providedIn: 'root'
@@ -10,6 +11,7 @@ export class ClickOutsideService {
     $onClick = this._$onClick.asObservable();
 
     public activeTarget: HTMLElement | null | undefined;
+    public activeItem: IItemData | null | undefined;
 
     constructor() {
         fromEvent(document.body, 'click').pipe(

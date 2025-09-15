@@ -11,6 +11,16 @@ body {
     height: calc(var(--app-height) - 80px);
 }
 
+.stats {
+    position: relative;
+    width: 100%;
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
 textarea:focus,
 input:focus {
     outline: none;

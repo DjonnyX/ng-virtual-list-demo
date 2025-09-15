@@ -24,7 +24,11 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   if (type === 'group-header') {
     groupDynamicIndex++;
   }
-  GROUP_DYNAMIC_ITEMS.push({ id, type, edited: false, name: type === 'group-header' ? `Group ${groupDynamicIndex}` : `${id}. ${generateText()}`, incomType });
+  const isGroup = type === 'group-header', hasImage = isGroup ? false : Boolean(Math.round(Math.random() * 0.75));
+  GROUP_DYNAMIC_ITEMS.push({
+    id, type, edited: false, name: isGroup ? `Group ${groupDynamicIndex}` : `${id}. ${generateText()}`,
+    image: hasImage ? 'https://ng-virtual-list-chat-demo.eugene-grebennikov.pro/media/logo.png' : undefined, incomType,
+  });
   GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = {
     sticky: type === 'group-header' ? 1 : 0,
     selectable: type !== 'group-header',
