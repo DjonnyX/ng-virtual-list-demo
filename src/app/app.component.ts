@@ -244,7 +244,8 @@ export class AppComponent {
   }
 
   private increaseVersion() {
-    this._$version.next(this._$version.getValue() + 1);
+    const v = this._$version.getValue();
+    this._$version.next(v === Number.MAX_SAFE_INTEGER ? 0 : v + 1);
   }
 
   onScrollHandler(e: IScrollEvent & { [x: string]: any; }) {
