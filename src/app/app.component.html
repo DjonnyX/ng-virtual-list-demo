@@ -5,7 +5,7 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 19.7.4</span></div>
+    <div class="version"><span>v 19.7.6</span></div>
   </div>
   <div #stats class="stats"></div>
   <div class="container">
@@ -84,14 +84,14 @@
                   @if (data.image) {
                     <div class="complex-message">
                       <img [src]="data.image" />
-                      <textarea clickOutside [clickOutsideItem]="data"
+                      <textarea clickOutside [clickOutsideItem]="data" (keydown)="onKeyDownHandler($event)"
                     (onClickOutside)="onOutsideClickHandler($event, data, config.selected)"
                     [ngStyle]="{height: getContentHeight(measures.height, true) + 'px'}" [value]="data.name"
                     (click)="onTAClickHandler($event)" (onOutsideClose)="onEditingCloseHandler($event)"
                     (change)="onEditedHandler($event, data)"></textarea>
                     </div>
                   } @else {
-                    <textarea clickOutside [clickOutsideItem]="data"
+                    <textarea clickOutside [clickOutsideItem]="data" (keydown)="onKeyDownHandler($event)"
                     (onClickOutside)="onOutsideClickHandler($event, data, config.selected)"
                     [ngStyle]="{height: getContentHeight(measures.height) + 'px'}" [value]="data.name"
                     (click)="onTAClickHandler($event)" (onOutsideClose)="onEditingCloseHandler($event)"

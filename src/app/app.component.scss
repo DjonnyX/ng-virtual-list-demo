@@ -304,7 +304,8 @@
         }
 
         .message.focused {
-            box-shadow: 1px 2px 8px 4px rgba(0, 0, 0, 0.25);
+            background-color: rgb(255, 255, 255);
+            box-shadow: 1px 2px 8px 4px rgba(0, 0, 0, 0.1);
         }
 
         &.selected {
@@ -327,6 +328,12 @@
                 align-self: center;
                 background-color: #c4dfff;
             }
+
+            &.focused {
+                .message.selected {
+                    background-color: #d7e9ff;
+                }
+            }
         }
 
         &.edit {
@@ -348,6 +355,7 @@
             align-items: center;
             justify-content: center;
             width: 100%;
+
             img {
                 height: 72px;
             }
