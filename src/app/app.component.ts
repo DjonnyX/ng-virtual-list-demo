@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, ElementRef, Signal, signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-// import { NgVirtualListComponent, IScrollEvent, ISize, IVirtualListItem } from '../../../virtual-list/projects/ng-virtual-list/src/public-api';
-import { NgVirtualListComponent, IVirtualListItem, IRenderVirtualListItem, IScrollEvent, ISize, Id } from 'ng-virtual-list';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { NgVirtualListComponent, IRenderVirtualListItem, IScrollEvent, ISize, Id } from 'ng-virtual-list';
 import {
-  BehaviorSubject, combineLatest, debounceTime, delay, distinctUntilChanged, filter, from, interval,
-  map, mergeMap, of, switchMap, take, tap, throttleTime
+  BehaviorSubject, combineLatest, debounceTime, delay, filter, from, interval,
+  map, mergeMap, of, switchMap, tap
 } from 'rxjs';
 import { LOGO } from './const';
 import { GROUP_DYNAMIC_ITEMS, GROUP_DYNAMIC_ITEMS_STICKY_MAP, IItemData, ITEMS } from './const/collection';
@@ -219,7 +218,6 @@ export class AppComponent {
       tap(() => {
         const items = [...this.groupDynamicItems];
         items.pop();
-        // this._nextIndex--;
         items.push(msg);
         this.groupDynamicItemsConfigMap[msg.id] = {
           sticky: 0,
@@ -227,7 +225,6 @@ export class AppComponent {
         };
 
         items.shift();
-        // this._nextIndex--;
 
         for (let i = 0, l = 1; i < l; i++) {
           const msgStart = generateMessage(this._nextIndex);
@@ -265,15 +262,15 @@ export class AppComponent {
   }
 
   onClickHandler(item: IRenderVirtualListItem | undefined) {
-    // if (item) {
-    //   const element = this.groupDynamicItems.find(({ id }) => id === item.id);
-    //   console.log('e', element)
-    //   if (element) {
-    //     element['name'] = element['name'] + element['name'];
-    //   }
+    if (item) {
+      console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
+    }
+  }
 
-    //   this.groupDynamicItems = [... this.groupDynamicItems];
-    // }
+  onKeyDownHandler(e: KeyboardEvent) {
+    if (e.key === ' ') {
+      e.stopImmediatePropagation();
+    }
   }
 
   onEditItemHandler(e: Event, item: IRenderVirtualListItem | undefined, selected: boolean) {
