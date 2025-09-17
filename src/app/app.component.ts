@@ -18,7 +18,7 @@ import { SearchHighlightDirective } from './directives/search-highlight.directiv
 import { ClickOutsideService } from './directives/click-outside.service';
 import Stats from 'stats.js';
 
-const SNAP_HEIGHT = 100;
+const SNAP_HEIGHT = 120;
 
 // FPS
 (function () {
@@ -114,7 +114,7 @@ export class AppComponent {
         }
 
         if (this._$isEndOfListPosition.getValue()) {
-          list!.scrollToEnd('instant');
+          list!.scrollToEnd('instant', 4);
         }
       }),
     ).subscribe();
@@ -130,7 +130,7 @@ export class AppComponent {
           if (name) {
             const index = name?.indexOf(search);
             if (index > -1) {
-              list!.scrollTo(item.id, 'instant');
+              list!.scrollTo(item.id, 'instant', 4);
               break;
             }
           }
@@ -338,10 +338,10 @@ export class AppComponent {
     if (item) {
       this.title.set(item.data['name']);
       this.resetList();
-      this._listContainerRef()?.scrollToEnd('instant');
+      this._listContainerRef()?.scrollToEnd('instant', 4);
 
       setTimeout(() => {
-        this._listContainerRef()?.scrollToEnd('instant');
+        this._listContainerRef()?.scrollToEnd('instant', 4);
       }, 150);
     }
   }
