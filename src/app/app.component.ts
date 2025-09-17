@@ -130,7 +130,7 @@ export class AppComponent {
           if (name) {
             const index = name?.indexOf(search);
             if (index > -1) {
-              list!.scrollTo(item.id, 'instant', 4);
+              list!.scrollTo(item.id, 'instant');
               break;
             }
           }
