@@ -5,7 +5,7 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 19.7.8</span></div>
+    <div class="version"><span>v 19.7.9</span></div>
   </div>
   <div #stats class="stats"></div>
   <div class="container">
@@ -68,8 +68,17 @@
           </div>
         }
         @case ("group-header") {
-          <div class="list__group-container" [ngClass]="{'snapped': config.snapped, 'snapped-out': config.snappedOut}">
-            <span>{{data.name}}</span>
+          <div class="list__group-container" [ngClass]="{'snapped': config.snapped, 'snapped-out': config.snappedOut, 'collapsed': config.collapsed}">
+            <span class="name">
+              <span>{{data.name}}</span>
+              <span class="collapsable-indicator">
+                @if (config.collapsed) {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="inherit" viewBox="0 0 24 24"><path fill="inherit" d="M12.601 17.596a.85.85 0 0 1-1.202 0L1.239 7.436a.75.75 0 0 1 1.06-1.061l9.701 9.7 9.7-9.7a.75.75 0 0 1 1.061 1.06z"></path></svg>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="inherit" viewBox="0 0 24 24"><path fill="inherit" d="M12.601 6.404a.85.85 0 0 0-1.202 0l-10.16 10.16a.75.75 0 0 0 1.06 1.061L12 7.925l9.7 9.7a.75.75 0 0 0 1.061-1.06z"></path></svg>
+                }
+              </span>
+            </span>
           </div>
         }
         @default {
