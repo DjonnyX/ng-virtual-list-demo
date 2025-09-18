@@ -31,7 +31,8 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   });
   GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = {
     sticky: type === 'group-header' ? 1 : 0,
-    selectable: type !== 'group-header',
+    selectable: !isGroup,
+    collapsable: isGroup,
   };
 }
 
