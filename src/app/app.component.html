@@ -68,7 +68,7 @@
           </div>
         }
         @case ("group-header") {
-          <div class="list__group-container" [ngClass]="{'snapped': config.snapped, 'snapped-out': config.snappedOut, 'collapsed': config.collapsed}">
+          <div class="list__group-container" [ngClass]="{'snapped': config.snapped, 'snapped-out': config.snappedOut, 'focused': config.focus, 'collapsed': config.collapsed}">
             <span class="name">
               <span>{{data.name}}</span>
               <span class="collapsable-indicator">
