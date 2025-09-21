@@ -1,6 +1,6 @@
 {
   "name": "vlist-test",
-  "version": "19.7.14",
+  "version": "19.7.15",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -17,7 +17,7 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
-    "ng-virtual-list": "^19.7.14",
+    "ng-virtual-list": "^19.7.15",
     "rxjs": "~7.8.0",
     "stats.js": "^0.17.0",
     "tslib": "^2.3.0",
