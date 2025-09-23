@@ -6,7 +6,7 @@ export interface IItemData {
   edited: boolean;
 }
 
-const ROOMS_MAX_ITEMS = 10000, MAX_ITEMS = 10000;
+const ROOMS_MAX_ITEMS = 1000, MAX_ITEMS = 100;
 
 const ITEMS: IVirtualListCollection = [];
 
