@@ -24,13 +24,13 @@
         <dock-left>
           <div class="list-rooms__container">
             <ng-virtual-list class="list rooms" [items]="items" [itemRenderer]="itemRenderer" [trackBy]="'id'"
-              [itemSize]="40" [dynamicSize]="true" [bufferSize]="60"
+              [itemSize]="40" [dynamicSize]="true" [bufferSize]="2" [maxBufferSize]="10"
               (onItemClick)="onRoomClickHandler($event)"></ng-virtual-list>
           </div>
         </dock-left>
         <div class="list-wrapper">
           <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-            [trackBy]="'id'" [itemSize]="40" [bufferSize]="30" [bufferSize]="120" [collectionMode]="'lazy'"
+            [trackBy]="'id'" [itemSize]="40" [bufferSize]="2" [maxBufferSize]="10" [collectionMode]="'lazy'"
             [itemConfigMap]="groupDynamicItemsConfigMap" [dynamicSize]="true" [snap]="true"
             (onScroll)="onScrollHandler($event)" snappingMethod="advanced" methodForSelecting="multi-select"
             (onScrollEnd)="onScrollEndHandler($event)" (onScrollReachStart)="onScrollReachStartHandler()" [enabledBufferOptimization]="false"
