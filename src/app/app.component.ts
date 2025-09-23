@@ -243,7 +243,7 @@ export class AppComponent {
   }
 
   onScrollReachStartHandler() {
-    const items = [...this.groupDynamicItems];
+    let items = [...this.groupDynamicItems], firstGroup = items.splice(0, 1), messages = [];
     for (let i = 0, l = 25; i < l; i++) {
       const msgStart = generateMessage(this._nextIndex);
       this._nextIndex++;
@@ -251,8 +251,10 @@ export class AppComponent {
         sticky: 0,
         selectable: true,
       };
-      items.unshift(msgStart);
+      messages.unshift(msgStart);
     }
+
+    items = [...firstGroup, ...messages, ...items];
 
     this.groupDynamicItems = items;
 
