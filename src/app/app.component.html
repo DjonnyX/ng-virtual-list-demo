@@ -5,7 +5,7 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 19.7.15</span></div>
+    <div class="version"><span>v 19.7.17</span></div>
   </div>
   <div #stats class="stats"></div>
   <div class="container">
@@ -33,7 +33,7 @@
             [trackBy]="'id'" [itemSize]="40" [bufferSize]="30" [bufferSize]="120"
             [itemConfigMap]="groupDynamicItemsConfigMap" [dynamicSize]="true" [snap]="true"
             (onScroll)="onScrollHandler($event)" snappingMethod="advanced" methodForSelecting="multi-select"
-            (onScrollEnd)="onScrollEndHandler($event)" [enabledBufferOptimization]="false"
+            (onScrollEnd)="onScrollEndHandler($event)" (onScrollReachStart)="onScrollReachStartHandler()" [enabledBufferOptimization]="false"
             (onItemClick)="onClickHandler($event)"></ng-virtual-list>
         </div>
       </app-drawer>

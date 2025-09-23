@@ -204,14 +204,6 @@ export class AppComponent {
           selectable: false,
         };
 
-        const writeIndicatorShift = generateWriteIndicator(this._nextIndex);
-        this._nextIndex++;
-        this.groupDynamicItems = [writeIndicatorShift, ...this.groupDynamicItems];
-        this.groupDynamicItemsConfigMap[writeIndicatorShift.id] = {
-          sticky: 0,
-          selectable: false,
-        };
-
         this.increaseVersion();
       }),
       delay(500),
@@ -223,18 +215,6 @@ export class AppComponent {
           sticky: 0,
           selectable: true,
         };
-
-        items.shift();
-
-        for (let i = 0, l = 1; i < l; i++) {
-          const msgStart = generateMessage(this._nextIndex);
-          this._nextIndex++;
-          this.groupDynamicItemsConfigMap[msgStart.id] = {
-            sticky: 0,
-            selectable: true,
-          };
-          items.unshift(msgStart);
-        }
 
         this.groupDynamicItems = items;
 
@@ -260,6 +240,23 @@ export class AppComponent {
       viewportEndY: e.scrollSize + e.size,
       scrollWeight: e.scrollWeight,
     });
+  }
+
+  onScrollReachStartHandler() {
+    const items = [...this.groupDynamicItems];
+    for (let i = 0, l = 25; i < l; i++) {
+      const msgStart = generateMessage(this._nextIndex);
+      this._nextIndex++;
+      this.groupDynamicItemsConfigMap[msgStart.id] = {
+        sticky: 0,
+        selectable: true,
+      };
+      items.unshift(msgStart);
+    }
+
+    this.groupDynamicItems = items;
+
+    this.increaseVersion();
   }
 
   onClickHandler(item: IRenderVirtualListItem | undefined) {
