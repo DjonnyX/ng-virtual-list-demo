@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, ElementRef, Signal, signal, viewChild } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
-import { NgVirtualListComponent, IRenderVirtualListItem, IScrollEvent, ISize, Id } from 'ng-virtual-list';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { NgVirtualListComponent, IRenderVirtualListItem, IScrollEvent, ISize, Id, FocusAlignments } from 'ng-virtual-list';
 import {
-  BehaviorSubject, combineLatest, debounceTime, delay, filter, from, interval,
-  map, mergeMap, of, switchMap, tap
+  BehaviorSubject, combineLatest, debounceTime, delay, filter, from, interval, map, mergeMap, of, switchMap, tap,
 } from 'rxjs';
 import { LOGO } from './const';
 import { GROUP_DYNAMIC_ITEMS, GROUP_DYNAMIC_ITEMS_STICKY_MAP, IItemData, ITEMS } from './const/collection';
@@ -98,6 +97,7 @@ export class AppComponent {
     });
 
     const $virtualList = toObservable(list).pipe(
+      takeUntilDestroyed(),
       filter(list => !!list),
       switchMap(list => combineLatest([of(list), list?.$initialized])),
       filter(([, init]) => !!init),
@@ -105,6 +105,7 @@ export class AppComponent {
     );
 
     combineLatest([this.$version, $virtualList]).pipe(
+      takeUntilDestroyed(),
       map(([version, list]) => ({ version, list })),
       filter(({ list }) => !!list),
       debounceTime(50),
@@ -120,34 +121,53 @@ export class AppComponent {
     ).subscribe();
 
     combineLatest([$virtualList, toObservable(this.search)]).pipe(
+      takeUntilDestroyed(),
       map(([list, search]) => ({ list, search })),
       filter(({ list }) => !!list),
-      debounceTime(0),
-      tap(({ list, search }) => {
+      debounceTime(250),
+      tap(({ search }) => {
         this.searchedWords.set(search.split(' '));
+      }),
+      filter(({ search }) => search !== ''),
+      switchMap(({ list, search }) => {
         for (let i = 0, l = this.groupDynamicItems.length; i < l; i++) {
           const item = this.groupDynamicItems[i], name: string = item['name'];
           if (name) {
             const index = name?.indexOf(search);
             if (index > -1) {
-              list!.scrollTo(item.id, 'instant');
-              break;
+              const id = item.id;
+              return of(({ id, list }));
             }
           }
+        }
+        return of({ id: undefined, list: undefined });
+      }),
+      tap(({ id, list }) => {
+        if (id !== undefined && list) {
+          list!.scrollTo(id, 'instant');
+        }
+      }),
+      debounceTime(2000),
+      tap(({ id, list }) => {
+        if (id !== undefined && list) {
+          list.focus(id, FocusAlignments.NONE);
         }
       }),
     ).subscribe();
 
     $virtualList.pipe(
+      takeUntilDestroyed(),
       delay(100),
       mergeMap(() => this.write()),
     ).subscribe();
 
     from(interval(2000)).pipe(
+      takeUntilDestroyed(),
       mergeMap(() => this.write()),
     ).subscribe();
 
     combineLatest([toObservable(this._scrollParams), $virtualList, this.$version]).pipe(
+      takeUntilDestroyed(),
       delay(10),
       switchMap(([{ viewportEndY, scrollWeight }, list]) => {
         let bounds: ISize | undefined;
@@ -166,6 +186,7 @@ export class AppComponent {
     window.addEventListener('resize', appHeightHandler);
 
     $virtualList.pipe(
+      takeUntilDestroyed(),
       tap(() => {
         appHeightHandler();
       }),
@@ -338,10 +359,6 @@ export class AppComponent {
       this.title.set(item.data['name']);
       this.resetList();
       this._listContainerRef()?.scrollToEnd('instant', 4);
-
-      setTimeout(() => {
-        this._listContainerRef()?.scrollToEnd('instant', 4);
-      }, 150);
     }
   }
 
