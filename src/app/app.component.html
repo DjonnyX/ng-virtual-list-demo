@@ -5,7 +5,7 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 19.7.22</span></div>
+    <div class="version"><span>v 19.7.23</span></div>
   </div>
   <div #stats class="stats"></div>
   <div class="container">
@@ -30,7 +30,7 @@
         </dock-left>
         <div class="list-wrapper">
           <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-            [trackBy]="'id'" [itemSize]="40" [bufferSize]="2" [maxBufferSize]="10" [collectionMode]="'lazy'"
+            [trackBy]="'id'" [itemSize]="40" [bufferSize]="2" [maxBufferSize]="10" collectionMode="lazy"
             [itemConfigMap]="groupDynamicItemsConfigMap" [dynamicSize]="true" [snap]="true"
             (onScroll)="onScrollHandler($event)" snappingMethod="advanced" methodForSelecting="multi-select"
             (onScrollEnd)="onScrollEndHandler($event)" (onScrollReachStart)="onScrollReachStartHandler()" [enabledBufferOptimization]="false"
@@ -68,7 +68,7 @@
           </div>
         }
         @case ("group-header") {
-          <div class="list__group-container" [ngClass]="{'snapped': config.snapped, 'snapped-out': config.snappedOut, 'focused': config.focus, 'collapsed': config.collapsed}">
+          <div class="list__group-container" [ngClass]="{'snapped': config.snapped, 'snapped-out': config.snappedOut, 'focused': config.focused, 'collapsed': config.collapsed}">
             <span class="name">
               <span>{{data.name}}</span>
               <span class="collapsable-indicator">
@@ -84,7 +84,7 @@
         @default {
           @let isIn = data.incomType === 'in';
           @let isOut = data.incomType === 'out';
-          @let class = {'in': isIn, 'out': isOut, 'edited': data.edited, 'selected': config.selected, focused: config.focus};
+          @let class = {'in': isIn, 'out': isOut, 'edited': data.edited, 'selected': config.selected, focused: config.focused};
           <div class="list__container" [ngClass]="class" [longPress]="1000">
             <!-- (longPressFinish)="onEditModeStartHandler()"> -->
             <div class="message__container" [ngClass]="class">
