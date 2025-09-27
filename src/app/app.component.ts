@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, ElementRef, Signal, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { NgVirtualListComponent, IRenderVirtualListItem, IScrollEvent, ISize, Id, FocusAlignments } from 'ng-virtual-list';
+import { NgVirtualListComponent, IRenderVirtualListItem, IScrollEvent, ISize, Id, FocusAlignments } from "../../../virtual-list/projects/ng-virtual-list/src/public-api";
+// import { NgVirtualListComponent, IRenderVirtualListItem, IScrollEvent, ISize, Id, FocusAlignments } from 'ng-virtual-list';
 import {
   BehaviorSubject, combineLatest, debounceTime, delay, filter, from, interval, map, mergeMap, of, switchMap, tap,
 } from 'rxjs';
@@ -265,7 +266,7 @@ export class AppComponent {
 
   onScrollReachStartHandler() {
     let items = [...this.groupDynamicItems], firstGroup = items.splice(0, 1), messages = [];
-    for (let i = 0, l = 25; i < l; i++) {
+    for (let i = 0, l = 100; i < l; i++) {
       const msgStart = generateMessage(this._nextIndex);
       this._nextIndex++;
       this.groupDynamicItemsConfigMap[msgStart.id] = {
