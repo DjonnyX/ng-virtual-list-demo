@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, ElementRef, Signal, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { NgVirtualListComponent, IRenderVirtualListItem, IScrollEvent, ISize, Id, FocusAlignments } from "../../../virtual-list/projects/ng-virtual-list/src/public-api";
-// import { NgVirtualListComponent, IRenderVirtualListItem, IScrollEvent, ISize, Id, FocusAlignments } from 'ng-virtual-list';
+import { NgVirtualListComponent, IRenderVirtualListItem, IScrollEvent, ISize, Id, FocusAlignments } from 'ng-virtual-list';
 import {
   BehaviorSubject, combineLatest, debounceTime, delay, filter, from, interval, map, mergeMap, of, switchMap, tap,
 } from 'rxjs';
