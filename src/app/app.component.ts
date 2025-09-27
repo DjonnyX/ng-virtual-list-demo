@@ -265,7 +265,7 @@ export class AppComponent {
 
   onScrollReachStartHandler() {
     let items = [...this.groupDynamicItems], firstGroup = items.splice(0, 1), messages = [];
-    for (let i = 0, l = 25; i < l; i++) {
+    for (let i = 0, l = 100; i < l; i++) {
       const msgStart = generateMessage(this._nextIndex);
       this._nextIndex++;
       this.groupDynamicItemsConfigMap[msgStart.id] = {
