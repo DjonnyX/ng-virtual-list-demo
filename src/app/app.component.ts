@@ -111,11 +111,16 @@ export class AppComponent {
       debounceTime(50),
       tap(({ version, list }) => {
         if (version === 0) {
-          list!.scrollToEnd('instant');
+          list!.scrollToEnd(undefined, {
+            behavior: 'instant',
+          });
         }
 
         if (this._$isEndOfListPosition.getValue()) {
-          list!.scrollToEnd('instant', 4);
+          list!.scrollToEnd(undefined, {
+            behavior: 'instant',
+            iteration: 4,
+          });
         }
       }),
     ).subscribe();
@@ -144,7 +149,7 @@ export class AppComponent {
       }),
       tap(({ id, list }) => {
         if (id !== undefined && list) {
-          list!.scrollTo(id, 'instant');
+          list!.scrollTo(id);
         }
       }),
       debounceTime(2000),
@@ -358,7 +363,10 @@ export class AppComponent {
     if (item) {
       this.title.set(item.data['name']);
       this.resetList();
-      this._listContainerRef()?.scrollToEnd('instant', 4);
+      this._listContainerRef()?.scrollToEnd(undefined, {
+        behavior: 'instant',
+        iteration: 4,
+      });
     }
   }
 
