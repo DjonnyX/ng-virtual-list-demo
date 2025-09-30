@@ -11,7 +11,7 @@ import { generateMessage, generateWriteIndicator } from './utils/collection';
 import { FormsModule } from '@angular/forms';
 import { MenuButtonComponent } from './components/menu-button/menu-button.component';
 import { SearchComponent } from './components/search/search.component';
-import { DrawerComponent, DockMode, TDockMode } from "./components/drawer/drawer.component";
+import { DrawerComponent, DockMode } from "./components/drawer/drawer.component";
 import { ClickOutsideDirective, LongPressDirective } from './directives';
 import { SearchHighlightDirective } from './directives/search-highlight.directive';
 import { ClickOutsideService } from './directives/click-outside.service';
@@ -57,6 +57,8 @@ const SNAP_HEIGHT = 120;
   providers: [ClickOutsideService],
 })
 export class AppComponent {
+  readonly trackBy = 'id';
+
   readonly logo = LOGO;
 
   protected _listContainerRef = viewChild('dynamicList', { read: NgVirtualListComponent });
@@ -89,7 +91,8 @@ export class AppComponent {
   private _scrollParams = signal<{ viewportEndY: number, scrollWeight: number }>({ viewportEndY: 0, scrollWeight: 0 });
 
   constructor(private _service: ClickOutsideService) {
-    const list = this._listContainerRef;
+    const list = this._listContainerRef,
+      trackBy = this.trackBy;
 
     this.dockMode = computed(() => {
       const menuOpened = this.menuOpened();
@@ -110,12 +113,18 @@ export class AppComponent {
       filter(({ list }) => !!list),
       debounceTime(50),
       tap(({ version, list }) => {
-        if (version === 0) {
-          list!.scrollToEnd('instant');
+        // init
+        if (version < 2 ) {
+          list!.scrollToEnd(undefined, {
+            behavior: 'instant',
+          });
         }
 
         if (this._$isEndOfListPosition.getValue()) {
-          list!.scrollToEnd('instant', 4);
+          list!.scrollToEnd(undefined, {
+            behavior: 'instant',
+            iteration: 4,
+          });
         }
       }),
     ).subscribe();
@@ -135,7 +144,7 @@ export class AppComponent {
           if (name) {
             const index = name?.indexOf(search);
             if (index > -1) {
-              const id = item.id;
+              const id = item[trackBy];
               return of(({ id, list }));
             }
           }
@@ -144,7 +153,7 @@ export class AppComponent {
       }),
       tap(({ id, list }) => {
         if (id !== undefined && list) {
-          list!.scrollTo(id, 'instant');
+          list!.scrollTo(id);
         }
       }),
       debounceTime(2000),
@@ -172,7 +181,7 @@ export class AppComponent {
       switchMap(([{ viewportEndY, scrollWeight }, list]) => {
         let bounds: ISize | undefined;
         if (list) {
-          bounds = list.getItemBounds(this.groupDynamicItems[this.groupDynamicItems.length - 1].id);
+          bounds = list.getItemBounds(this.groupDynamicItems[this.groupDynamicItems.length - 1][trackBy]!);
         }
         const height = (bounds?.height ?? 0);
         return of((viewportEndY + height + SNAP_HEIGHT) >= scrollWeight);
@@ -213,14 +222,14 @@ export class AppComponent {
   private _nextIndex = this.groupDynamicItems.length;
 
   private write() {
-    const msg = generateMessage(this._nextIndex);
+    const trackBy = this.trackBy, msg = generateMessage(this._nextIndex);
     this._nextIndex++;
     return of(msg).pipe(
       tap(() => {
         const writeIndicator = generateWriteIndicator(this._nextIndex);
         this._nextIndex++;
         this.groupDynamicItems = [...this.groupDynamicItems, writeIndicator];
-        this.groupDynamicItemsConfigMap[writeIndicator.id] = {
+        this.groupDynamicItemsConfigMap[writeIndicator[trackBy]] = {
           sticky: 0,
           selectable: false,
         };
@@ -232,7 +241,7 @@ export class AppComponent {
         const items = [...this.groupDynamicItems];
         items.pop();
         items.push(msg);
-        this.groupDynamicItemsConfigMap[msg.id] = {
+        this.groupDynamicItemsConfigMap[msg[trackBy]] = {
           sticky: 0,
           selectable: true,
         };
@@ -264,11 +273,12 @@ export class AppComponent {
   }
 
   onScrollReachStartHandler() {
+    const trackBy = this.trackBy;
     let items = [...this.groupDynamicItems], firstGroup = items.splice(0, 1), messages = [];
     for (let i = 0, l = 100; i < l; i++) {
       const msgStart = generateMessage(this._nextIndex);
       this._nextIndex++;
-      this.groupDynamicItemsConfigMap[msgStart.id] = {
+      this.groupDynamicItemsConfigMap[msgStart[trackBy]] = {
         sticky: 0,
         selectable: true,
       };
@@ -284,7 +294,8 @@ export class AppComponent {
 
   onClickHandler(item: IRenderVirtualListItem | undefined) {
     if (item) {
-      console.info(`Click: (ID: ${item.id}) Item ${item.data.name}`);
+      const trackBy = this.trackBy;
+      console.info(`Click: (ID: ${item.data?.[trackBy]}) Item ${item.data.name}`);
     }
   }
 
@@ -294,11 +305,11 @@ export class AppComponent {
     }
   }
 
-  onEditItemHandler(e: Event, item: IRenderVirtualListItem | undefined, selected: boolean) {
+  onEditItemHandler(e: Event, item: IItemData | undefined, selected: boolean) {
     if (selected) {
       e.stopImmediatePropagation();
     }
-    const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
+    const trackBy = this.trackBy, index = this.groupDynamicItems.findIndex(it => it?.[trackBy] === item?.[trackBy]);
     if (index > -1) {
       const items = [...this.groupDynamicItems], item = items[index];
       items[index] = { ...item, edited: selected ? !item.edited : false };
@@ -311,8 +322,8 @@ export class AppComponent {
     e.stopImmediatePropagation();
   }
 
-  onOutsideClickHandler(e: Event, item: IRenderVirtualListItem<any> | undefined, selected: boolean) {
-    const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
+  onOutsideClickHandler(e: Event, item: IItemData | undefined, selected: boolean) {
+    const trackBy = this.trackBy, index = this.groupDynamicItems.findIndex(it => it?.[trackBy] === item?.[trackBy]);
     if (index > -1) {
       const items = [...this.groupDynamicItems], item = items[index];
       items[index] = { ...item, edited: false };
@@ -323,7 +334,7 @@ export class AppComponent {
   }
 
   onEditingCloseHandler(data: { target: any; item: IItemData & { id: Id }; }) {
-    const index = this.groupDynamicItems.findIndex(({ id }) => id === data.item.id);
+    const trackBy = this.trackBy, index = this.groupDynamicItems.findIndex(it => it?.[trackBy] === data.item[trackBy]);
     if (index > -1) {
       const items = [...this.groupDynamicItems], _item = items[index];
       items[index] = { ..._item, edited: false, name: data.target.value };
@@ -332,8 +343,8 @@ export class AppComponent {
     }
   }
 
-  onEditedHandler(e: any, item: IRenderVirtualListItem<any> | undefined) {
-    const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
+  onEditedHandler(e: any, item: IItemData | undefined) {
+    const trackBy = this.trackBy, index = this.groupDynamicItems.findIndex(it => it?.[trackBy] === item?.[trackBy]);
     if (index > -1) {
       const items = [...this.groupDynamicItems], _item = items[index];
       items[index] = { ..._item, edited: !_item.edited, name: e.target.value };
@@ -342,9 +353,9 @@ export class AppComponent {
     }
   }
 
-  onDeleteItemHandler(e: Event, item: IRenderVirtualListItem | undefined) {
+  onDeleteItemHandler(e: Event, item: IItemData | undefined) {
     e.stopImmediatePropagation();
-    const index = this.groupDynamicItems.findIndex(({ id }) => id === item?.id);
+    const trackBy = this.trackBy, index = this.groupDynamicItems.findIndex(it => it?.[trackBy] === item?.[trackBy]);
     if (index > -1) {
       const items = [...this.groupDynamicItems];
       items.splice(index, 1);
@@ -358,7 +369,10 @@ export class AppComponent {
     if (item) {
       this.title.set(item.data['name']);
       this.resetList();
-      this._listContainerRef()?.scrollToEnd('instant', 4);
+      this._listContainerRef()?.scrollToEnd(undefined, {
+        behavior: 'instant',
+        iteration: 4,
+      });
     }
   }
 
