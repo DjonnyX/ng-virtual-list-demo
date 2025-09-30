@@ -5,7 +5,7 @@
     <p class="l">Animation of elements is supported.</p>
     <p class="l m">&#64;author: djonnyx&#64;gmail.com</p>
     <img class="logo" [src]="logo" />
-    <div class="version"><span>v 19.7.30</span></div>
+    <div class="version"><span>v 19.8.0</span></div>
   </div>
   <div #stats class="stats"></div>
   <div class="container">
@@ -23,14 +23,14 @@
       <app-drawer [dock]="doc" [dockLeftSize]="240">
         <dock-left>
           <div class="list-rooms__container">
-            <ng-virtual-list class="list rooms" [items]="items" [itemRenderer]="itemRenderer" [trackBy]="'id'"
+            <ng-virtual-list class="list rooms" [items]="items" [itemRenderer]="itemRenderer" [trackBy]="trackBy"
               [itemSize]="40" [dynamicSize]="true" [bufferSize]="2" [maxBufferSize]="10"
               (onItemClick)="onRoomClickHandler($event)"></ng-virtual-list>
           </div>
         </dock-left>
         <div class="list-wrapper">
           <ng-virtual-list #dynamicList class="list" [items]="groupDynamicItems" [itemRenderer]="groupItemRenderer"
-            [trackBy]="'id'" [itemSize]="40" [bufferSize]="5" [maxBufferSize]="15" collectionMode="lazy"
+            [trackBy]="trackBy" [itemSize]="40" [bufferSize]="5" [maxBufferSize]="15" collectionMode="lazy"
             [itemConfigMap]="groupDynamicItemsConfigMap" [dynamicSize]="true" [snap]="true"
             (onScroll)="onScrollHandler($event)" snappingMethod="advanced" methodForSelecting="multi-select"
             (onScrollEnd)="onScrollEndHandler($event)" (onScrollReachStart)="onScrollReachStartHandler()" [enabledBufferOptimization]="false"

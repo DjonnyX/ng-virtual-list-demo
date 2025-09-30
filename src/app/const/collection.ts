@@ -1,7 +1,9 @@
-import { IVirtualListCollection, IVirtualListItemConfigMap } from "ng-virtual-list";
+import { Id, IVirtualListCollection, IVirtualListItemConfigMap } from "ng-virtual-list";
 import { generateText, generateWord } from "../utils";
 
 export interface IItemData {
+  id?: Id;
+  number?: Id;
   name: string;
   edited: boolean;
 }
@@ -12,7 +14,7 @@ const ITEMS: IVirtualListCollection = [];
 
 for (let i = 0, l = ROOMS_MAX_ITEMS; i < l; i++) {
   const id = i + 1;
-  ITEMS.push({ id, name: `${generateWord(30, true)}` });
+  ITEMS.push({ id, number: id, name: `${generateWord(30, true)}` });
 }
 
 const GROUP_DYNAMIC_ITEMS: IVirtualListCollection<IItemData> = [],
@@ -26,7 +28,7 @@ for (let i = 0, l = MAX_ITEMS; i < l; i++) {
   }
   const isGroup = type === 'group-header', hasImage = isGroup ? false : Boolean(Math.round(Math.random() * 0.75));
   GROUP_DYNAMIC_ITEMS.push({
-    id, type, edited: false, name: isGroup ? `Group ${groupDynamicIndex}` : `${id}. ${generateText()}`,
+    id, number: id, type, edited: false, name: isGroup ? `Group ${groupDynamicIndex}` : `${id}. ${generateText()}`,
     image: hasImage ? 'https://ng-virtual-list-chat-demo.eugene-grebennikov.pro/media/logo.png' : undefined, incomType,
   });
   GROUP_DYNAMIC_ITEMS_STICKY_MAP[id] = {
